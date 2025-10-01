@@ -2,6 +2,7 @@
 ### 1 IMPORTS ###
 
 import sys
+import os
 import pygame
 from pygame.locals import *
 import datetime
@@ -78,7 +79,9 @@ def main_menu():
             buttontext_rect.append(subroutines.Button.button_rect_blit(button[i], canvas, color_bg, color_text, color_wash))
 ### 9 IMAGE LOADING
 #################display coffee shop picture and caption###############
-    img1 = pygame.image.load(r"C:\Users\Welcme\PycharmProjects\Edward Lloyds Coffeehouse Project 1\Another Coffeehouse.png")
+    # base_dir = os.path.dirname(os.path.abspath(__file__))
+    # img1_path = os.path.join(base_dir, "Another Coffeehouse.png")
+    img1 = pygame.image.load("./Another Coffeehouse.png")
     img1r = pygame.transform.scale(img1, (rightpanelimg_w, rightpanelimg_h))
 
     canvas.blit(img1r, (rightpanelimg_x, rightpanelimg_y))
@@ -88,7 +91,8 @@ def main_menu():
 ##############################show logo######################################
 
 
-    logoimg = pygame.image.load(r"C:\\Users\Welcme\PycharmProjects\Edward Lloyds Coffeehouse Project 1\Logo.jpg")
+    # logoimg_path = os.path.join(base_dir, "Logo.jpg")
+    logoimg = pygame.image.load("./Logo.jpg")
     #logoimgr = pygame.transform.scale(img, (600, 400))
     canvas.blit(logoimg, (50, 900))
 
@@ -223,7 +227,9 @@ def page_1(window, canvas):  # BACKGROUND TO THIS SERIES OF GAMES
     menubuttontext_rect = Rect(buttonwidth, height - 2 * buttonheight, 1.5 * buttonwidth, buttonheight)
 
     ### 12 IMAGE LOADING ###
-    balance_img = pygame.image.load(r"C:\\Users\Welcme\PycharmProjects\Edward Lloyds Coffeehouse Project 1\Risk Reward Balance.png")
+    # base_dir = os.path.dirname(os.path.abspath(__file__))
+    # balance_img_path = os.path.join(base_dir, "Risk Reward Balance.png")
+    balance_img = pygame.image.load("./Risk Reward Balance.png")
     balance_imgr = pygame.transform.scale(balance_img, (300, 300))
     ### 11 RECTS ###
     textsurf = Rect(leftpaneltext_x, leftpaneltext_y, leftpaneltext_w, leftpaneltext_h)
@@ -232,7 +238,8 @@ def page_1(window, canvas):  # BACKGROUND TO THIS SERIES OF GAMES
     pygame.draw.rect(canvas, color_border, menubuttontext_rect, 1)
     canvas.blit(menubuttontext, menubuttontext_rect)
 
-    logoimg = pygame.image.load(r"C:\\Users\Welcme\PycharmProjects\Edward Lloyds Coffeehouse Project 1\Logo.jpg")
+    # logoimg_path = os.path.join(base_dir, "Logo.jpg")
+    logoimg = pygame.image.load("./Logo.jpg")
     # logoimgr = pygame.transform.scale(img, (600, 400))
     canvas.blit(logoimg, (900, 900))
 
@@ -283,7 +290,9 @@ def page_3(window, canvas):  # sources and historic notes
     running = True
     menubutton_clicked = False
     ### 8 IMAGE LOADING ###
-    img = pygame.image.load(r"C:\\Users\Welcme\PycharmProjects\Edward Lloyds Coffeehouse Project 1\Caird_library.jpg")
+    # base_dir = os.path.dirname(os.path.abspath(__file__))
+    # caird_img_path = os.path.join(base_dir, "Caird_library.jpg")
+    img = pygame.image.load("./Caird_library.jpg")
     imgr = pygame.transform.scale(img, (600, 400))
     ### 11 RECTS ###
     menubuttontext_rect = Rect(buttonwidth, height - 2 * buttonheight, 1.5 * buttonwidth, buttonheight)

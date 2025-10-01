@@ -1,4 +1,5 @@
 import premiums_alt
+import os
 import pygame
 import local_data
 import mytext
@@ -72,6 +73,8 @@ def goinside_sub(window, canvas,from_key):
         for i in range(len(ship_list_me)):
             ship_list_selected.append(subroutines.Ship(ship_list_me[i]))  # instantiates ship
         local_data.ship_list_selected = ship_list_selected  # mirror
+        # keep ship indices in sync with mirror to avoid length mismatches later
+        local_data.ship_list_me = ship_list_me
         insurers_list = []
         mmax = 3  # number of insurers
         local_data.mmax = mmax
@@ -109,11 +112,14 @@ def goinside_sub(window, canvas,from_key):
                 subroutines.Button.button_rect_blit(goinside_button[i], canvas, color_bg, color_text, color_wash))
     ### 9 IMAGE LOADING
     #################display coffee shop picture and caption###############
-    img1 = pygame.image.load(r"C:\Users\Welcme\PycharmProjects\Edward Lloyds Coffeehouse Project 1\Two business men.png")
+    # base_dir = os.path.dirname(os.path.abspath(__file__))
+    # img1_path = os.path.join(base_dir, "Two business men.png")
+    img1 = pygame.image.load("./Two business men.png")
     img1r = pygame.transform.scale(img1, (panelimg_w, panelimg_h))
 
     canvas.blit(img1r, (panelimg_x, panelimg_y))
-    img2 = pygame.image.load(r"C:\Users\Welcme\PycharmProjects\Edward Lloyds Coffeehouse Project 1\Watching Ships Set Sail.png")
+    # img2_path = os.path.join(base_dir, "Watching Ships Set Sail.png")
+    img2 = pygame.image.load("./Watching Ships Set Sail.png")
     img2r = pygame.transform.scale(img2, (panelimgr_w, panelimgr_h))
     canvas.blit(img2r, (panelimgr_x, panelimgr_y))
 
@@ -131,7 +137,7 @@ def goinside_sub(window, canvas,from_key):
     ##############################instiate ships######################################
 
     #ship_list_selected = local_data.ship_list_selected  # retrieves mirror
-    for i in range(len(local_data.ship_list_me)):
+    for i in range(len(ship_list_selected)):
         ship_nested_list.append(
             [ship_list_selected[i].ship_name, ship_list_selected[i].port, ship_list_selected[i].destination,
              ship_list_selected[i].tons,
@@ -307,4 +313,4 @@ def show_ships(window, canvas, ship_nested_list):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 menubutton_clicked = True if menubuttontext_rect.collidepoint(event.pos) else False
             if menubutton_clicked == True:
-                goinside_sub(window, canvas)
+                goinside_sub(window, canvas, from_key=1)
