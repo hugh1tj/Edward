@@ -385,7 +385,7 @@ class Insurer():
         self.insurer_name = local_data.insurer_data[i][0]
         self.initial_book_value = local_data.insurer_premium_data[i][1]
         self.percent_premium=local_data.insurer_premium_data[i][2]
-        self.remaining_book_value = 4000
+        #self.remaining_book_value = 4000
         self.preference_list=[]
         #self.premium_list=[]
         self.ships_insured_list=[]
@@ -394,14 +394,19 @@ class Insurer():
         self.premiums_income_accum=0
         self.claims = 0
         self.balance = self.premiums_income_accum-self.claims
-
+        self.remaining_book_value =  self.initial_book_value-self.premiums_income_accum
     def insurer_update(self,i):
-        #print("in update")
-        #self.premiums_income = self.initial_book_value - self.remaining_book_value
-        #print("premium_income:", self.premiums_income, self.initial_book_value, self.remaining_book_value)
+        #print("in update i",i)
+
         self.balance = self.premiums_income_accum - self.claims
-
-
+        self.remaining_book_value = self.initial_book_value - self.premiums_income_accum
+        #print ("in update remaining book value",self.remaining_book_value, "initial book value",self.initial_book_value,"premiums_income_accum",self.premiums_income_accum)
+    def insurer_reset(self,i):
+        print ("in insurer reset")
+        self.claims=0
+        self.premiums_income=0
+        self.premiums_income_accum=0
+        self.remaining_book_value=self.initial_book_value
 def find_route(port,destination): ### note this method is also coded as a method for Ship Class - some redundancy here
     for i in range(0, len(local_data.ports_waypoints_coord)):
 
@@ -541,7 +546,7 @@ def draw_grid_with_name(canvas, nested_list, cell_width, cell_height,paddingx,pa
             y = table_start_y + row_index * (cell_height + paddingy) + paddingy
             #print(str(item))
             # Draw cell
-            if str(item)=="":
+            if str(item)=="" or str(item)=="0":
                 pygame.draw.rect(canvas, 'black', (x, y, cell_width, cell_height))
                 width=1
                 back_color='black'
@@ -563,6 +568,46 @@ def draw_grid_with_name(canvas, nested_list, cell_width, cell_height,paddingx,pa
             text_rect = text.get_rect(center=(x + cell_width // 2, y + cell_height // 2))
             canvas.blit(text, text_rect)
 
+def draw_grid_with_name_and_insurer(canvas, nested_list, cell_width, cell_height,paddingx,paddingy,table_start_y,table_start_x,font_num,row_head,col_head, ship_name_sub, insurer_name):# m font is int 20,22,row_head is number
+    #of rows which should have red border and col_head number of columns which should have red border
+    if font_num == 22:
+        font_use = pygame.font.SysFont("Arial", 22, bold=False)
+    else:
+        font_use = pygame.font.SysFont("Arial", 20, bold=False)
+    text_color_def='black'
+
+    for row_index, row in enumerate(nested_list):
+
+        for col_index, item in enumerate(row):
+
+            x = table_start_x+col_index * (cell_width + paddingx) + paddingx
+            y = table_start_y + row_index * (cell_height + paddingy) + paddingy
+            #print(str(item))
+            # Draw cell
+            if str(item)==""or str(item)=="0":
+                pygame.draw.rect(canvas, 'black', (x, y, cell_width, cell_height))
+                width=1
+                back_color='black'
+            else:
+                width=2
+                back_color = 'blue'
+                pygame.draw.rect(canvas, 'white', (x, y, cell_width, cell_height))
+            if str(item)==ship_name_sub:
+                width=2
+                back_color='aqua'
+                pygame.draw.rect(canvas, back_color, (x, y, cell_width, cell_height))
+            if str(item) == insurer_name:
+                width = 2
+                back_color = 'gold'
+                pygame.draw.rect(canvas, back_color, (x, y, cell_width, cell_height))
+            if row_index <= row_head-1 or col_index<=col_head-1:
+                pygame.draw.rect(canvas, 'red', (x, y, cell_width, cell_height),width)
+            else:
+                pygame.draw.rect(canvas, back_color, (x, y, cell_width, cell_height),width)
+
+            text = font_use.render(str(item), True, text_color_def)
+            text_rect = text.get_rect(center=(x + cell_width // 2, y + cell_height // 2))
+            canvas.blit(text, text_rect)
 
 
 

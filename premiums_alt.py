@@ -9,12 +9,12 @@ import goinside
 def premiums_alt_sub(window, canvas):
     pygame.init()
     font22 = pygame.font.SysFont("Arial", 22, bold=False)
-    color_text = ('black')
+    color_text = 'black'
     smax = 10  # number of ships for display in educational part
     local_data.smax = smax
     mmax = len(local_data.insurer_data)  # number of insurers default 3
     from_index = 0
-    ship_list_me = []
+
     ship_list_me = (random.sample(range(0, len(local_data.ship_data)), smax))
     local_data.ship_list_me = ship_list_me
     ship_list_selected = []
@@ -32,6 +32,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
     slength = smax  # for adjusting length of premiums_offered_nested_list and display
     mmax = len(local_data.insurer_data)
     fail_round=True
+    premium_below=-1
     ### 3. COLOR DEFINITIONS ###
     color_text = ('black')
     color_border = ('blue')
@@ -118,6 +119,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
     cell_width_t1 = size_width / (mmax * 4)
     padding_x = 3
     padding_y = 3
+    x=0 # used as an index in the creation of lists
     title0_text_rect = pygame.Rect(marginx, 0, cell_width_title, cell_height)
     pygame.draw.rect(canvas, "white", title0_text_rect)
     pygame.draw.rect(canvas, color_border, title0_text_rect, 1)
@@ -131,6 +133,8 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
     ### create table 0
     ship_list_nested = []
     ship_list_nested_with_title = []
+
+
     for i in range(len(ship_list_selected)):
         ship_list_nested.append(
             [ship_list_selected[i].ship_name, ship_list_selected[i].port, ship_list_selected[i].destination,
@@ -157,7 +161,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                    "Cost of ", "Cost of"]
     title_list2 = ["", "of Origin", "", "", "", "of build", "condition", "condition", " going", "returning", "of build",
                    "of repair/refit"]
-    # ship_list_nested_with_title=ship_list_nested
+
     ship_list_nested_with_title.insert(0, title_list2)
     ship_list_nested_with_title.insert(0, title_list1)
     table_start_x = 5
@@ -251,7 +255,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
 
         for jx in range (len(clist),5):
             clist.append(clist[0])
-        #print("m", m, "clist", clist)
+
         ship_sorted_list = sorted(ship_list_nested,
                                  key=lambda x: (x[clist[0]], x[clist[1]], x[clist[2]], x[clist[3]], x[clist[4]]))  # does for each insurer ]m'
 
@@ -266,30 +270,31 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
             premiums_offered_nested_list[s + 2][m * 4] = ship_name
             risk_factor = 1 + s * 0.1
             premiums_offered_nested_list[s + 2][m * 4 + 1] = round(risk_factor, 1)
-            insurer_base_book_value = insurers_list[m].initial_book_value
-            #print("percent premium my algo",local_data.myalgo_premium)
+
             premium_annual=insurers_list[m].percent_premium
             if m==2: #myalgo
                 if local_data.myalgo_premium==0:
                     premium_annual=(insurers_list[m].percent_premium)
                 else:
                     premium_annual=float(local_data.myalgo_premium)
+            for mo in range(0, mmax):  # to reset remaining book values at start of bidding round
+                insurers_list[mo].insurer_reset(mo)
+                print("282  m,remaining book value",m, insurers_list[mo].remaining_book_value)
 
             book_factor = round(insurers_list[m].initial_book_value / insurers_list[m].remaining_book_value, 2)
+            print ("285 m",m,"book factor",book_factor,"initial/remaining book value",insurers_list[m].initial_book_value,insurers_list[m].remaining_book_value)
             premiums_offered_nested_list[s + 2][m * 4 + 2] = book_factor
             ship_value = ship_sorted_list[s][10]
-            #self.percent_premium = local_data.insurer_premium_data[i][2]
-            # print ("ship value",ship_name, ship_value)
+
             premium_offer = round(ship_value * risk_factor * book_factor * (premium_annual / 100))
-            print ("premium offer: ", premium_offer, "ship name: ", ship_name,"insurer",m, "s",s)
-            # print("value, risk, book, premium", ship_value, risk_factor, book_factor, premium_offer)
+
             premiums_offered_nested_list[s + 2][m * 4 + 3] = premium_offer
             subroutines.draw_grid_with_blanks(canvas, premiums_offered_nested_list, cell_width_t1, cell_height,
                                               padding_x,
                                               padding_y, table1_start_y, table_start_x, 20, 2, 0, color_bg="white")
     window.blit(canvas, (0, 0))
     pygame.display.update()
-    #pygame.time.delay(10000)
+    pygame.time.delay(5000)
     end_of_bidding = False
     ### START BIDDING ROUNDS
     m = 0
@@ -302,57 +307,60 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
     round_count = 0
     accepted_total=0
     while accepted_total<smax:
-        print ("at start - accepted total", accepted_total, "smax",smax)
+        print("-----------------------------------------------------------------")
+        #print ("line 305 at start of accepted total<smax - accepted total", accepted_total, "smax",smax)
         accepted=0
-        #while accepted!=2 or s<=smax:
+
         while accepted!=2 or accepted_total<=smax:
             ship_name = premiums_offered_nested_list[s + 2][m * 4]
             premium_offered = premiums_offered_nested_list[s + 2][m * 4 + 3]
-            print("in 367 ship_name", ship_name, "m", m,"premium offered", premium_offered)
-            subroutines.draw_grid_with_name(canvas, premiums_offered_nested_list, cell_width_t1, cell_height,
+            insurer_name=insurers_list[m].insurer_name
+            print("line 311 in accepted!=2 or accepted_total<smax ", "ship_name", ship_name, "m", m,"premium offered", premium_offered,"accepted",accepted,"accepted_total",accepted_total)
+            subroutines.draw_grid_with_name_and_insurer(canvas, premiums_offered_nested_list, cell_width_t1, cell_height,
                                                 padding_x,
                                                 padding_y,
-                                                table1_start_y, table_start_x, 20, 2, 0, ship_name)
+                                                table1_start_y, table_start_x, 20, 2, 0, ship_name,insurer_name)
             window.blit(canvas, (0, 0))
             pygame.display.update()
             srepl_list = []
             tries = 0
+            pygame.time.delay(15000)
             ### CHECK THAT OTHER INSURERS HAVE NOT GIVEN A BETTER OFFER ###
             for mothernumb in range(0, len(insurer_not_list)):
                 mother = insurer_not_list[mothernumb]  # retrieve each other insurer in turn
-
+                print("insurer not list",insurer_not_list,"mother",mother )
                 for smother in range(0, smax):
-                    if premiums_offered_nested_list[smother + 1][m * 4] != "":  # finds length of current offered list
-                        smothermax = smother
-                print("smothermax", smothermax, "m", m)
+                    if premiums_offered_nested_list[smother + 2][m * 4] != "":  # finds length of current offered list
+                        smothermax = smother+1
+
                 for sdown in range (0,smothermax):
                     ship_name_other = premiums_offered_nested_list[sdown + 2][mother * 4]
+                    #print("line 330 ship_name_other",ship_name_other,"sdown",sdown)
                     if ship_name == ship_name_other:
-                        print("m", m, "mother", mother, "sdown", sdown, "ship_name_other", ship_name_other,
-                              "premium offered other", premiums_offered_nested_list[sdown + 2][mother * 4 + 3])
+                        print("335 - m",m, "mother", mother, "sdown", sdown, "ship_name_other", ship_name_other,"premium offered other", premiums_offered_nested_list[sdown + 2][mother * 4 + 3])
                         tries += 1
                         premium_offered_other = premiums_offered_nested_list[sdown + 2][mother * 4 + 3]
                         if premium_offered <= premium_offered_other:
                             if premium_offered < insurers_list[m].remaining_book_value:
                                     accepted += 1  # two acceptances required for each other insurer, there is a better premium in the other insurer
-                                    srepl_list.append(sdown)
-                                    print("insurer m wins 1", m, "premium offered", premium_offered, "ship name",ship_name,"accepted",accepted, "other insurer",mother)
-
+                                    srepl_list.append(sdown) # place in list of ships in unsuccessful insurer
+                                    print(" in line 339 insurer m wins once over other insurer - m", m,"other insurer -mother",mother, "premium offered", premium_offered, "ship name",ship_name,"accepted",accepted, "other insurer",mother)
                                     saccept=s
-
+                        break
             if accepted !=2: # for all sdowns in other insurers there is a better premium
                 if tries >= 2:
-                    print("fail on s",s,"m",m)
+                    print("347 fail on s",s,"m",m)
                     fail_round=True
                     accepted=0
             else: # accepted == 2:
-                print("accepted", accepted, "ship name", ship_name, "premium offered", premium_offered, "Insurer",m)
+                print(" in line 349 accepted", accepted, "ship name", ship_name, "premium offered", premium_offered, "Insurer",m)
                 fail_round=False
                 accepted = 0  # to stop double counting
 
                 accepted_total += 1  # to count that all ships have been covered
                 premiums_accepted_nested_list[0 + round_count + 2][m * 2] = ship_name
                 premiums_accepted_nested_list[0 + round_count + 2][m * 2 + 1] = premium_offered
+                insurers_list[m].premiums_income_accum+= premium_offered  # oop
                 insurers_list[m].remaining_book_value = insurers_list[m].remaining_book_value - premium_offered  # oop
                 insurers_list[m].ships_insured_list.append(ship_name)
                 ### FIND SUCCESSFUL SHIP IN SHIP LIST SELECTED TO UPDATE INSURED DATA
@@ -361,6 +369,14 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                         ship_list_selected[sfind].ship_insurer = insurers_list[m].insurer_name
                         ship_list_selected[sfind].ship_premium = premium_offered
                         break
+                for mo in range(0, mmax):
+                    insurers_list[mo].insurer_update
+                #print("369 insurers book value nested list",insurer_book_value_nested_list)
+                subroutines.draw_grid_tjh(canvas, insurer_book_value_nested_list, cell_width_t3, cell_height, padding_x,
+                                          padding_y,
+                                          table3_start_y + cell_height, table3_start_x, 20, 2, 0)
+                window.blit(canvas, (0, 0))
+                pygame.display.update()
                 ### MOVE LIST ONE UP IN OFFERED LIST TO FILL SPACE OF SUCCESSFUl SHIP ACCEPTED ###
                 for srepl in range(saccept, smax-1):
                     ship_name_below = premiums_offered_nested_list[srepl + 2 + 1][m * 4]
@@ -374,6 +390,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                                     book_factor = 3
                                 risk_factor = premiums_offered_nested_list[srepl + 2 + 1][m * 4 + 1]
                                 premium_below = round(ship_value_below * risk_factor * book_factor * (premium_annual / 100))
+                                print("389 m",m,"ship_name_below",ship_name_below,"premium_below", premium_below)
                                 break
                     else:
                         book_factor=""
@@ -389,39 +406,65 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                 premiums_offered_nested_list[smax+1][m * 4 + 1] = ""
                 premiums_offered_nested_list[smax+1][m * 4] = ""
 
-                                ### REMOVE FROM LIST OF UNSUCCESSFUL INSURERs AND MOVE ONE UP
+                                ### REMOVE FROM LIST OF UNSUCCESSFUL INSURERS AND MOVE ONE UP
                 for mnotnumb in range(0, len(insurer_not_list)):
                     mnot = insurer_not_list[mnotnumb]
-                    print("mnotnumber",mnotnumb,"mnot",mnot,"len srepl_list",len(srepl_list), "insurer not list",insurer_not_list)
-                    sfromrepl=srepl_list[mnotnumb]  ## //
-                    for sreplother in range(sfromrepl, smax-1):
-
-                        ship_name_below = premiums_offered_nested_list[sreplother + 2 + 1][mnot * 4]
-                        if ship_name_below != "":
-                            premiums_offered_nested_list[sreplother + 2][mnot * 4 + 3] = premiums_offered_nested_list[sreplother + 2 + 1][mnot * 4 + 3]
-                            book_factor = round(insurers_list[mnot].initial_book_value / insurers_list[mnot].remaining_book_value, 2)
-                            risk_factor = premiums_offered_nested_list[sreplother + 2 + 1][mnot * 4 + 1]
-                            for sothermoveup in range(0, smax-1):
-                                ship_name_search = ship_sorted_list[sothermoveup][0]
-                                if ship_name_below == ship_name_search:
-                                    ship_value_below = ship_sorted_list[sothermoveup][10]
-                                    premium_below = round(ship_value_below * risk_factor * book_factor * premium_annual / 100)
-                                    #break
+                    print("408 remove rom list of unsuccessful insurers - mnotnumber",mnotnumb,"mnot",mnot,"len srepl_list",len(srepl_list), "insurer not list",insurer_not_list)
+                    print("409 srepl_list ",srepl_list)
+                    sfromrepl=srepl_list[mnotnumb]  ## srepl_list stores number in list of ship in unsuccessful insurer
+                    #for sreplother in range(sfromrepl, smax-1):
+                    for sreplother in range(sfromrepl, smax):
+                        print("413 sreplother",sreplother,"sfromrepl",sfromrepl)
+                        if sreplother>=smax-1:
+                            print("415 at print blank - sreplother",sreplother)
+                            premiums_offered_nested_list[sreplother + 2][mnot * 4 + 2] = "" # book factor at end of list
+                            premiums_offered_nested_list[sreplother + 2][mnot * 4 + 1] = "" # risk factor
+                            premiums_offered_nested_list[sreplother + 2][mnot * 4] = "" # ship name below
+                            premiums_offered_nested_list[sreplother + 2][mnot * 4 + 3] = 0 # premium below
                         else:
-                            ship_name_below=""
-                            book_factor = ""
-                            risk_factor = ""
-                            premium_below = 0
+                            ship_name_below = premiums_offered_nested_list[sreplother + 2 + 1][mnot * 4]
+                            if ship_name_below != "":
+                                print( "423 ship_name_below",ship_name_below, "sreplother",sreplother)
+                                #premiums_offered_nested_list[sreplother + 2][mnot * 4 + 2] = book_factor# book factor
+                                #premiums_offered_nested_list[sreplother + 2][mnot * 4 + 1] = risk_factor# risk factor
+                                for sothermoveup in range(0, smax):
+                                    ship_name_search = ship_sorted_list[sothermoveup][0]
+                                    if ship_name_below == ship_name_search:
+                                        ship_value_below = ship_sorted_list[sothermoveup][10]
+                                        book_factor = round(insurers_list[mnot].initial_book_value / insurers_list[
+                                            mnot].remaining_book_value, 2)  #
+                                        risk_factor = premiums_offered_nested_list[sreplother + 2 + 1][
+                                            mnot * 4 + 1]  # risk factor
+                                        print("439 risk factor", risk_factor)
+                                        premiums_offered_nested_list[sreplother + 2][
+                                            mnot * 4 + 2] = book_factor  # book factor
+                                        premiums_offered_nested_list[sreplother + 2][
+                                            mnot * 4 + 1] = risk_factor  # risk factor
+                                        premium_below = round(ship_value_below * risk_factor * book_factor * premium_annual / 100)
+                                        premiums_offered_nested_list[sreplother + 2][mnot * 4 + 3]=premium_below
+                                        premiums_offered_nested_list[sreplother + 2][
+                                            mnot * 4 + 2] = book_factor
+                                        premiums_offered_nested_list[sreplother + 2][mnot * 4 + 1] = risk_factor
+                                        premiums_offered_nested_list[sreplother + 2][mnot * 4] = ship_name_below
+                                        premiums_offered_nested_list[sreplother + 2][mnot * 4 + 3] = premium_below
+                            else:
+                                print("447 at print blank next - sreplother", sreplother)
+                                premiums_offered_nested_list[sreplother + 2][
+                                        mnot * 4 + 2] = ""  # book factor at end of list
+                                premiums_offered_nested_list[sreplother + 2][mnot * 4 + 1] = ""  # risk factor
+                                premiums_offered_nested_list[sreplother + 2][mnot * 4] = ""  # ship name below
+                                premiums_offered_nested_list[sreplother + 2][mnot * 4 + 3] = 0  # premium below
+                        #premiums_offered_nested_list[sreplother + 2][mnot * 4 + 2] = book_factor
+                        #premiums_offered_nested_list[sreplother + 2][mnot * 4 + 1] = risk_factor
+                        #premiums_offered_nested_list[sreplother + 2][mnot * 4] = ship_name_below
+                        #premiums_offered_nested_list[sreplother + 2][mnot * 4 + 3] = premium_below
 
-                        premiums_offered_nested_list[sreplother + 2][mnot * 4 + 2] = book_factor
-                        premiums_offered_nested_list[sreplother + 2][mnot * 4 + 1] = risk_factor
-                        premiums_offered_nested_list[sreplother + 2][mnot * 4] = ship_name_below
-                        premiums_offered_nested_list[sreplother + 2][mnot * 4 + 3] = premium_below
-
-                    premiums_offered_nested_list[smax + 1][mnot * 4] = ""
-                    premiums_offered_nested_list[smax + 1][mnot * 4 + 3] =0# premium
-                    premiums_offered_nested_list[smax + 1][mnot * 4 + 2] = ""  # book factor
-                    premiums_offered_nested_list[smax + 1][mnot * 4 + 1] = ""  # risk factor
+                    #premiums_offered_nested_list[smax + 1][mnot * 4] = ""
+                    #premiums_offered_nested_list[smax + 1][mnot * 4 + 3] =0# premium
+                    #premiums_offered_nested_list[smax + 1][mnot * 4 + 2] = ""  # book factor
+                    #premiums_offered_nested_list[smax + 1][mnot * 4 + 1] = ""  # risk factor
+            #print ("line 425 finished round - ship name",ship_name, "fail_round",fail_round)
+            print ("------------------------------------------------------------------")
             if fail_round==False:
                 m = m + 1  # ends accepted== 2
                 s=0 # restart from top of table
@@ -440,7 +483,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                 for sm in range (0,smax):
                     if premiums_offered_nested_list[sm + 1][m * 4] !="": # finds length of current offered list
                         smmax=sm
-                print ("smmax",smmax,"m",m)
+                print ("443 smmax",smmax,"m",m)
                 if s<smmax:
                     s+=1
                     fail_round=False
@@ -452,8 +495,9 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                         m = 0
                         round_count += 1
                     insurer_not_list = []
-
-            insurer_book_value_nested_list[1][m] = insurers_list[m].remaining_book_value
+            for mo in range(0, mmax):
+                insurers_list[mo].insurer_update(mo)
+                insurer_book_value_nested_list[1][mo] = insurers_list[mo].remaining_book_value
             subroutines.draw_grid_with_name(canvas, premiums_offered_nested_list, cell_width_t1, cell_height,
                                                 padding_x, padding_y,
                                                 table1_start_y, table_start_x, 20, 2, 0, ship_name)
@@ -466,7 +510,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
 
             window.blit(canvas, (0, 0))
             pygame.display.update()
-            #pygame.time.delay(10000)
+            #pygame.time.delay(30000)
 
             if accepted_total >= smax:
                 print ("at end of bidding")
@@ -489,7 +533,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                 else:
                     coffee_menu_button_clicked = True if coffee_menu_button_text_rect.collidepoint(event.pos) else False
                     if coffee_menu_button_clicked == True:
-                        # print("coffee menu clicked")
+
                         from_key=1 # indicates coming from premiums_alt
                         goinside.goinside_sub(window, canvas, from_key)
 
