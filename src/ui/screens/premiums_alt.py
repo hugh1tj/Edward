@@ -324,7 +324,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
             pygame.display.update()
             srepl_list = []
             tries = 0
-            pygame.time.delay(15000)
+            pygame.time.delay(1000)
             ### CHECK THAT OTHER INSURERS HAVE NOT GIVEN A BETTER OFFER ###
             for mothernumb in range(0, len(insurer_not_list)):
                 mother = insurer_not_list[mothernumb]  # retrieve each other insurer in turn
