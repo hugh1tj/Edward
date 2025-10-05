@@ -398,7 +398,7 @@ def routessub(window, canvas):
                         main_menu()
                     
                     if drift_button_text_rect.collidepoint(event.pos)==True:
-                        print("drift button clicked")
+                        #print("drift button clicked")
                         if drift_show == True:
                             
                             drift_show = False

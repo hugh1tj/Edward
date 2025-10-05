@@ -164,10 +164,18 @@ class Ship():
         self.marker_radius = 5
         self.ship_insurer = ""
         self.ship_event_y_list = []
-        self.ship_log = ["Ship Log Details for ship " + self.ship_name,
+        if str(self.ship_insurer)=="Uninsured":
+
+            self.ship_log = ["Ship Log Details for ship " + self.ship_name,
+                         "for other ships click on ship name buttons - top left", "This ship " + "has not been insured. " ,"Leaving Port Rig Condition:"+str(self.rig_condition_base)+ " Hull Condition:"+str(self.hull_condition_base)+" "+str(round(self.ship_speed_cond,1))+" knots"]
+        else:
+            
+            self.ship_log = ["Ship Log Details for ship " + self.ship_name,
                          "for other ships click on ship name buttons - top left", "This ship " + "is insured by " + str(
                 self.ship_insurer) + " at a premium of £" + str(self.ship_premium),"Leaving Port Rig Condition:"+str(self.rig_condition_base)+ " Hull Condition:"+str(self.hull_condition_base)+" "+str(round(self.ship_speed_cond,1))+" knots"]
+        
         return
+    
 
 
 
@@ -402,7 +410,7 @@ class Insurer():
         self.remaining_book_value = self.initial_book_value - self.premiums_income_accum
         #print ("in update remaining book value",self.remaining_book_value, "initial book value",self.initial_book_value,"premiums_income_accum",self.premiums_income_accum)
     def insurer_reset(self,i):
-        print ("in insurer reset")
+        #print ("in insurer reset")
         self.claims=0
         self.premiums_income=0
         self.premiums_income_accum=0
@@ -496,8 +504,34 @@ def draw_grid_tjh(canvas, nested_list, cell_width, cell_height,paddingx,paddingy
             text_rect = text.get_rect(center=(x + cell_width // 2, y + cell_height // 2))
             canvas.blit(text, text_rect)
 
+def draw_one_column_list(canvas, one_column_list, cell_width, cell_height,paddingy,table_start_y,table_start_x,row_head):#row_head is number of rows of headings to be in red
+
+    font_use = pygame.font.SysFont("Arial", 20, bold=False)
+    for row_index, row in enumerate(one_column_list):
+        #print(" in one col - row index","row",row)
+        
+        x = table_start_x
+        y = table_start_y + row_index * (cell_height + paddingy) + paddingy
+
+        width=1
+        
+        back_color = 'blue'
+        pygame.draw.rect(canvas, 'white', (x, y, cell_width, cell_height))
+        if row_index<=row_head-1:
+                pygame.draw.rect(canvas, 'red', (x, y, cell_width, cell_height),width)
+        else:
+                pygame.draw.rect(canvas, back_color, (x, y, cell_width, cell_height),width)
+        
+        
+
+            # Render text
+        text = font_use.render(str(row), True, 'black')
+        text_rect = text.get_rect(center=(x + cell_width // 2, y + cell_height // 2))
+        canvas.blit(text, text_rect)
+
 def draw_grid_with_blanks(canvas, nested_list, cell_width, cell_height,paddingx,paddingy,table_start_y,table_start_x,font_num,row_head,col_head,color_bg):# m font is int 20,22,row_head is number
     #of rows which should have red border and col_head number of columns which should have red border
+    #print("sub 501 nested list",nested_list)
     if font_num == 22:
         font_use = pygame.font.SysFont("Arial", 22, bold=False)
     else:
@@ -714,6 +748,11 @@ def ship_list_by_insurer_sub(window,canvas,color_bg,slist_x,slist_y):
                 # slist.append(["", ""])
                 slist.append([ship_list_selected[sj].ship_name,  ship_list_selected[sj].ship_premium_accum,round(ship_list_selected[sj].ship_damage_accum),round(ship_list_selected[sj].revenue_accum),round(ship_list_selected[sj].ship_balance_ins),round(ship_list_selected[sj].ship_balance_unins)])
         #slist.append(["", ""])
+    slist.append(["Uninsured",""])
+    for sj in range(0,smax):
+            if ship_list_selected[sj].ship_insurer=="Uninsured":
+                slist.append([ship_list_selected[sj].ship_name,  ship_list_selected[sj].ship_premium_accum,round(ship_list_selected[sj].ship_damage_accum),round(ship_list_selected[sj].revenue_accum),round(ship_list_selected[sj].ship_balance_ins),round(ship_list_selected[sj].ship_balance_unins)])
+                
 
     #print ("slist",slist)
     slist_nested = slist
