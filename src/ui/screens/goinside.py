@@ -247,10 +247,10 @@ def show_ships(window, canvas, ship_nested_list):
         destinations_list.append(destination)
     ports_unique_list = []
     [ports_unique_list.append(item) for item in ports_list if item not in ports_unique_list]
-    print(ports_unique_list)
+    #print(ports_unique_list)
     destination_unique_list = []
     [destination_unique_list.append(item) for item in destinations_list if item not in destination_unique_list]
-    print(destination_unique_list)
+    #print(destination_unique_list)
     ### RECTS
     title_text_rect = pygame.Rect(list_margin_x, 0, list_width, list_height)
     menubuttontext_rect = pygame.Rect(list_margin_x, 800, list_width * 1.5, list_height)

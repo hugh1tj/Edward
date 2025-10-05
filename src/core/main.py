@@ -116,7 +116,7 @@ def main_menu():
                         print(i)
 
                 if button[1].clicked:  # Background to this series of game
-                    print("page 1")
+                    #print("page 1")
                     page_1(window, canvas)
 
                 if button[2].clicked:  # Ports Cargo and Revenu

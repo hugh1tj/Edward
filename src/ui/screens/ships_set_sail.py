@@ -294,6 +294,13 @@ def ships_set_sail_sub(window, canvas,ship_list_me, ship_list_selected, insurers
                 button_names.append([button_text_1_raw,0])
                 button_text_2_raw = "      " + ship_list_selected[sj].port+ " to "+ship_list_selected[sj].destination
                 button_names.append([button_text_2_raw, 2])
+    button_names.append(["Uninsured",1],)
+    for sj in range(0,smax):
+            if ship_list_selected[sj].ship_insurer=="Uninsured":
+                button_text_1_raw = "  Ship Name:  " + ship_list_selected[sj].ship_name
+                button_names.append([button_text_1_raw,0])
+                button_text_2_raw = "      " + ship_list_selected[sj].port+ " to "+ship_list_selected[sj].destination
+                button_names.append([button_text_2_raw, 2])
     button = []
     buttontext_rect = []
     #############display buttons########################
@@ -548,6 +555,13 @@ def ships_set_sail_sub(window, canvas,ship_list_me, ship_list_selected, insurers
                     button_text_2_raw = "      " + ship_list_selected[sj].port + " to " + ship_list_selected[
                         sj].destination
                     button_names.append([button_text_2_raw, 2])
+            button_names.append(["Uninsured",1],)
+            for sj in range(0,smax):
+                if ship_list_selected[sj].ship_insurer=="Uninsured":
+                    button_text_1_raw = "  Ship Name:  " + ship_list_selected[sj].ship_name
+                    button_names.append([button_text_1_raw,0])
+                    button_text_2_raw = "      " + ship_list_selected[sj].port+ " to "+ship_list_selected[sj].destination
+                    button_names.append([button_text_2_raw, 2])
         button = []
         buttontext_rect = []
         #############display buttons########################
@@ -574,7 +588,7 @@ def ships_set_sail_sub(window, canvas,ship_list_me, ship_list_selected, insurers
 
                     ship_color = local_data.list_colors[sj]
                     pygame.draw.circle(canvas, ship_color, (buttonstart_x + 200, buttonstart_y + i * buttonheight + 10),
-                                       8)
+                               8)
         ###  DEVELOP WEATHER EVENTS #######################################################################
         for iw in range(len(weather_events_list)):
             if mytotal_time_months >= weather_events_list[iw].month_start and mytotal_time_months_res <= \

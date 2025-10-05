@@ -30,7 +30,7 @@ def weather_sub(window,canvas): # allows calling from main menu without goinside
     weather_sub_sub(window,canvas,img2r)
     
 def weather_sub_sub(window,canvas,img2r):
-    print("in weather_sub_sub")
+    #print("in weather_sub_sub")
     window.blit(canvas, (0, 0))
     pygame.display.update()
     rightpaneltext_x = 500  # for textsurf

@@ -101,10 +101,11 @@ weather_button_names=['Season Start (month)','Season End (month)','Coordinate X 
 
 
 
-insurer_premium_data=[('Algo1',6000,10),('Algo2',6000,9),('MyAlgo',6000,10)  ]
-insurer_data=[('Algo1',4,6,7,13,8),('Algo2',12,7,6,13,4),('MyAlgo',12,7,6,4,13)]  # sort place in ship
-
+insurer_premium_data=[('Algo1',1000,10),('Algo2',1000,9),('MyAlgo',1000,10)  ]
 # 1. name of insurer 2-6: risk preference references, 7. initial book value 8. % premium
+
+insurer_data=[('Algo1',4,6,7,13,8),('Algo2',12,7,6,13,5),('MyAlgo',12,7,6,4,13)]  # sort place in ship
+
 
 insurer_data_labels={4:"Age",6:"Hull condition",7:"Rig Condition",8:"Revenue",12:"Long or Short Haul",13:"Place of Build"}
 #insurer name followed by 5 preferences First,Second,Third, Fourth, Fifth . 1 is age, 2 is Place of Build, 3 is Hull Condition, 4 is Rig Condition and 5 is Shipping Route (Short Medkium and Long Hau)
@@ -116,7 +117,7 @@ insurer_data_labels={4:"Age",6:"Hull condition",7:"Rig Condition",8:"Revenue",12
 #                 10. round(ship_list_selected[i].ship_value), 11. round(ship_list_selected[i].ship_repair)])
 #                 12. Haul
 #                  13. Place of build  as place_of_build_preference
-risk_pref_labels_1 = ["Preference"," 1", " 2", " 3", " 4", " 5"]
+risk_pref_labels_1 = ["Preference"," 1", " 2", " 3", " 4", "5"]
 risk_list_labels=["UnderWriter","Risk Factor","Age","Place of Build","Hull condition","Rig Condition","Revenue","Long or Short Haul"]
 risk_pref_title_labels=[" Underwriter","MyAlgo", "Preferences", "", "", ""]
 myalgo=["MyAlgo","","","","",""]
@@ -142,3 +143,4 @@ revenue_mult=3 # revenue multiplier
 damage_increment=200
 
 premium_select_labels=["Premium %",5,7.5,10,12.5,15,17.5,20]
+bidding_delay=2 # as seconds
