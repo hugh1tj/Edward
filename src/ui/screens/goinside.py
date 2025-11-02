@@ -189,9 +189,9 @@ def goinside_sub(window, canvas,from_key):
                 canvas.fill('black')
                 premiums_alt.premiums_alt_sub_sub(window, canvas, ship_list_me,ship_list_selected,insurers_list,from_index=1)
 
-            if goinside_button[4].clicked:  # set sial
+            if goinside_button[4].clicked:  # set sail
                 canvas.fill('black')
-                ships_set_sail.ships_set_sail_sub(window, canvas,ship_list_me,ship_list_selected,insurers_list,from_index=1)
+                ships_set_sail.ships_set_sail_sub(window, canvas,ship_list_selected,insurers_list)
 
 
 def show_ships(window, canvas, ship_nested_list):
