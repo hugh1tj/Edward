@@ -83,12 +83,17 @@ def routessub(window, canvas):
     menubutton_clicked = False
     drift_button_clicked = False
     running = True
-    drift_show=True
+    drift_show=False
 ### 8 IMAGE LOADING ###
+    w,h=window.get_size()
+    print ("w,h",w,h)
+    wc,hc=canvas.get_size()
     
-
+    drift_drift = pygame.Surface((wc, hc))# for debugging
+    drift_drift.fill('white')
     spritesheet = Spritesheet('src/assets/images/spritesheet.png')
     map_map = TileMap('src/assets/data/newmap6Sep2025.csv', spritesheet)
+    #print("map-map type",type(map_map))
     #print(' map x ', local_data.mapx)
     img2 = pygame.image.load('src/assets/images/natlantictrimmedre.png')
     img2r = pygame.transform.scale(img2, (mapwidth, mapheight))  # map of north atlantic larger scale
@@ -134,40 +139,33 @@ def routessub(window, canvas):
     ### for title of panel of available ports
     port_title_text_rect = pygame.Rect(port_list_margin, port_list_start, port_list_width, port_list_height)
 
-    canvas.blit(img2r, (0, 0))  # blit map first
+    #canvas.blit(img2r, (0, 0))  # blit map first
     port="London" 
     destination="Jamaica" # default ports
     
     port_out_distance_text = font22.render(str(3 * 16 * len(path_go)), True, color_border)
     port_in_distance_text = font22.render(str(3 * 16 * len(path_back)), True, color_border)
-    canvas_drift=canvas
+    canvas.blit(img2r, (0, 0))  # blit map first
+    #drift_drift=canvas
+    map_map.draw_map(drift_drift)  # imports and displays sprites (from Tiles)
     while running:
-
         
-        canvas.blit(img2r, (0, 0))  # blit map first
+        
         ###  INSERT DESCRIPTIVE TEXT
         textsurf = pygame.Rect(rightpaneltext_x, rightpaneltext_y, rightpaneltext_w, rightpaneltext_h)
-        pygame.draw.rect(canvas, 'white', textsurf)  # blank bacground
-        subroutines.blit_text_rect_tjh(canvas, mytext.mytext5, 'black', textsurf, font22)
-        textsurf = pygame.Rect(rightpaneltext_x, rightpaneltext_y, rightpaneltext_w, rightpaneltext_h)
-        pygame.draw.rect(canvas_drift, 'white', textsurf)  # blank bacground
-        subroutines.blit_text_rect_tjh(canvas_drift, mytext.mytext5, 'black', textsurf, font22)
+        pygame.draw.rect(canvas, color_wash, textsurf)  # blank background
+        subroutines.blit_text_rect_tjh(canvas, mytext.mytext5, color_text, textsurf, font20g)
+        pygame.draw.rect(drift_drift, color_wash, textsurf)  # blank background
+        subroutines.blit_text_rect_tjh(drift_drift, mytext.mytext5, color_text, textsurf, font20g)
         #print ("drift show", drift_show)
         grid = local_data.mapx
-
+    
         if drift_show==True:
-            map_map.draw_map(canvas_drift)  # imports and displays sprites (from Tiles)
-            
             mx, my = pygame.mouse.get_pos()
-            if mx > 1300:
-                mxx = 1300
-            else:
-                mxx = mx
-            if my > 950:
-                myy = 950
-            else:
-                myy = my
-                
+            if mx > 1300:mxx = 1300
+            else:mxx = mx
+            if my > 950:myy = 950
+            else:myy = my
             mx_tile = int(mxx / 16)
             my_tile = int(myy / 16)
             gridtop = int(grid[my_tile][mx_tile])
@@ -185,19 +183,14 @@ def routessub(window, canvas):
                     gridtop_text="Labrador Current"
             #print("Gridtop", gridtop, gridtop_text)
             gridtop_text_rend= font20g.render(gridtop_text, True, color_border)
-            textsurf = pygame.Rect(rightpaneltext_x, rightpaneltext_y, rightpaneltext_w, rightpaneltext_h)
-            pygame.draw.rect(canvas_drift, 'white', textsurf)  # blank bacground
-            subroutines.blit_text_rect_tjh(canvas_drift, mytext.mytext5, 'black', textsurf, font20g)
-            canvas_drift.blit(gridtop_text_rend, gridtop_text_rect)
-            window.blit(canvas_drift, (0, 0))
-            #pygame.display.flip()
+           
+            #window.blit(canvas_drift, (0, 0))
+            window.blit(drift_drift, (0, 0))
+           
             
         else:
             window.blit(canvas, (0, 0))
-
-            
-
-        
+        pygame.display.flip()
     ##################instantiate ships in order to extract ports and destinations###########################
         for i in range(len(ship_list_me)):
             ship_list_selected.append(subroutines.Ship(ship_list_me[i]))  # instantiates all ships
@@ -225,6 +218,7 @@ def routessub(window, canvas):
                     pygame.draw.circle(canvas, 'red', (port_x, port_y), 4)
                     if port==port_temp:
                         pygame.draw.circle(canvas, 'blue', (port_x, port_y), 10)
+                        pygame.draw.circle(drift_drift, color_border, (port_x, port_y), 10)
 
 ### SHOW DESTINATIONS as circles ###
         for i in range(len(destination_unique_list)):
@@ -236,13 +230,15 @@ def routessub(window, canvas):
                     port_x = (local_data.ports_waypoints_coord[j][1])
                     port_y = (local_data.ports_waypoints_coord[j][2])
                     pygame.draw.circle(canvas, color_border, (port_x, port_y), 4)
-
+                    pygame.draw.circle(drift_drift, color_border, (port_x, port_y), 4)
                     if destination == destination_temp:
                         pygame.draw.circle(canvas, 'red', (port_x, port_y), 10)
+                        pygame.draw.circle(drift_drift, 'red', (port_x, port_y), 10)
     ### SETS TITLE FOR PANEL OF PORTS
         pygame.draw.rect(canvas, 'white', port_title_text_rect)
         pygame.draw.rect(canvas, color_border, port_title_text_rect, 2)
         canvas.blit(port_title_text, port_title_text_rect)
+        drift_drift.blit(port_title_text, port_title_text_rect)
         #port_text_rect = pygame.Rect(port_list_margin, port_list_start, port_list_width, port_list_height)
 ### INSTANTIATE PORT BUTTONS ###
        
@@ -253,7 +249,7 @@ def routessub(window, canvas):
        
         for i in range(0, lenport):
             port_button_text_rect.append(subroutines.Button.button_rect_blit(port_button[i], canvas, color_border,color_text,color_wash))
-       
+            port_button_text_rect.append(subroutines.Button.button_rect_blit(port_button[i], drift_drift, color_border,color_text,color_wash))
             port_button[i].clicked=False
 
 ### INSTANTIATE DESTINATION BUTTONS ###
@@ -266,6 +262,8 @@ def routessub(window, canvas):
         for i in range(0, lendest):
             destination_button_text_rect.append(
                 subroutines.Button.button_rect_blit(destination_button[i], canvas, color_border, color_text, color_wash))
+            destination_button_text_rect.append(
+                subroutines.Button.button_rect_blit(destination_button[i], drift_drift, color_border, color_text, color_wash))
             destination_button[i].clicked =False
         ### SETS TITLE PANEL OF DESTINATIONS
         dest_title_text_rect = pygame.Rect(port_list_margin, port_list_start + (lenport + 1) * port_list_height, port_list_width,
@@ -275,6 +273,9 @@ def routessub(window, canvas):
         pygame.draw.rect(canvas, 'white', dest_title_text_rect)
         pygame.draw.rect(canvas, color_border, dest_title_text_rect, 2)
         canvas.blit(dest_title_text, dest_title_text_rect)
+        pygame.draw.rect(drift_drift, color_wash, dest_title_text_rect)
+        pygame.draw.rect(drift_drift, color_border, dest_title_text_rect, 2)
+        drift_drift.blit(dest_title_text, dest_title_text_rect)
 
         for i in range(0, len(destination_unique_list)):
             port_text = font22.render(destination_unique_list[i], True, color_text)
@@ -283,11 +284,14 @@ def routessub(window, canvas):
                                      port_list_height)
 
 
-            pygame.draw.rect(canvas, 'white', port_text_rect)
+            pygame.draw.rect(canvas, color_wash, port_text_rect)
             pygame.draw.rect(canvas, color_border, port_text_rect, 2)
             canvas.blit(port_text, port_text_rect)
+            pygame.draw.rect(drift_drift, color_wash, port_text_rect)
+            pygame.draw.rect(drift_drift, color_border, port_text_rect, 2)
+            drift_drift.blit(port_text, port_text_rect)
     
-    ### INSERT RETURN TO MENU BUTTON AND CALCULATE DESCRITPTIVE TEXT
+    ### INSERT RETURN TO MENU BUTTON AND CALCULATE DESCRIPTIVE TEXT
         pygame.draw.rect(canvas, "white", menubuttontext_rect)
         pygame.draw.rect(canvas, color_border, menubuttontext_rect, 2)
         canvas.blit(menubuttontext, menubuttontext_rect)
@@ -298,6 +302,15 @@ def routessub(window, canvas):
         pygame.draw.rect(canvas, color_border, drift_button_text_rect, 2)
         canvas.blit(drift_button_text, drift_button_text_rect)
         
+        pygame.draw.rect(drift_drift, "white", menubuttontext_rect)
+        pygame.draw.rect(drift_drift, color_border, menubuttontext_rect, 2)
+        drift_drift.blit(menubuttontext, menubuttontext_rect)
+        pygame.draw.rect(drift_drift, "white", calculate_text_rect) #
+        pygame.draw.rect(drift_drift, color_border, calculate_text_rect, 2)
+        drift_drift.blit(calculate_text, calculate_text_rect)
+        pygame.draw.rect(drift_drift, "white", drift_button_text_rect)  #
+        pygame.draw.rect(drift_drift, color_border, drift_button_text_rect, 2)
+        drift_drift.blit(drift_button_text, drift_button_text_rect)
         ############  Display of Port and Destination Selected and calculated miles
         
         port_current_text = font22.render(port, True, color_border)
@@ -306,6 +319,7 @@ def routessub(window, canvas):
        
         port_out_distance_text = font22.render(str(3 * 16 * len(path_go)), True, color_border)
         port_in_distance_text = font22.render(str(3 * 16 * len(path_back)), True, color_border)
+
         pygame.draw.rect(canvas, 'white', port_selected_title_rect)
         pygame.draw.rect(canvas, color_border, port_selected_title_rect, 2)
         pygame.draw.rect(canvas, 'white', destination_selected_title_rect)
@@ -315,6 +329,15 @@ def routessub(window, canvas):
         pygame.draw.rect(canvas, 'white', destination_current_rect)
         pygame.draw.rect(canvas, color_border, destination_current_rect, 2)
 
+        pygame.draw.rect(drift_drift, 'white', port_selected_title_rect)
+        pygame.draw.rect(drift_drift, color_border, port_selected_title_rect, 2)
+        pygame.draw.rect(drift_drift, 'white', destination_selected_title_rect)
+        pygame.draw.rect(drift_drift, color_border, destination_selected_title_rect, 2)
+        pygame.draw.rect(drift_drift, 'white', port_current_rect)
+        pygame.draw.rect(drift_drift, color_border, port_current_rect, 2)
+        pygame.draw.rect(drift_drift, 'white', destination_current_rect)
+        pygame.draw.rect(drift_drift, color_border, destination_current_rect, 2)
+
         pygame.draw.rect(canvas, 'white', port_out_title_rect)
         pygame.draw.rect(canvas, color_border, port_out_title_rect, 2)
         pygame.draw.rect(canvas, 'white', port_in_title_rect)
@@ -323,6 +346,15 @@ def routessub(window, canvas):
         pygame.draw.rect(canvas, color_border, port_out_distance_rect, 2)
         pygame.draw.rect(canvas, 'white', port_in_distance_rect)
         pygame.draw.rect(canvas, color_border, port_in_distance_rect, 2)
+
+        pygame.draw.rect(drift_drift, 'white', port_out_title_rect)
+        pygame.draw.rect(drift_drift, color_border, port_out_title_rect, 2)
+        pygame.draw.rect(drift_drift, 'white', port_in_title_rect)
+        pygame.draw.rect(drift_drift, color_border, port_in_title_rect, 2)
+        pygame.draw.rect(drift_drift, 'white', port_out_distance_rect)
+        pygame.draw.rect(drift_drift, color_border, port_out_distance_rect, 2)
+        pygame.draw.rect(drift_drift, 'white', port_in_distance_rect)
+        pygame.draw.rect(drift_drift, color_border, port_in_distance_rect, 2)
 
         canvas.blit(port_selected_title_text, port_selected_title_rect)
         canvas.blit(destination_selected_title_text, destination_selected_title_rect)
@@ -334,6 +366,21 @@ def routessub(window, canvas):
         canvas.blit(port_in_title_text, port_in_title_rect)
         canvas.blit(port_in_distance_text, port_in_distance_rect)
         path = calculate_route(window, canvas, port, destination)  # this subroutine plots and draws dots for  the path
+
+        drift_drift.blit(port_selected_title_text, port_selected_title_rect)
+        drift_drift.blit(destination_selected_title_text, destination_selected_title_rect)
+
+        drift_drift.blit(port_current_text, port_current_rect)
+        drift_drift.blit(destination_current_text, destination_current_rect)
+        drift_drift.blit(port_out_title_text, port_out_title_rect)
+        drift_drift.blit(port_out_distance_text, port_out_distance_rect)
+        drift_drift.blit(port_in_title_text, port_in_title_rect)
+        drift_drift.blit(port_in_distance_text, port_in_distance_rect)
+        path = calculate_route(window, drift_drift, port, destination)  # this subroutine plots and draws dots for  the path
+
+
+
+
         path_go = path[0]
         path_back = path[1]
         port_out_distance_text = font22.render(str(3 * 16 * len(path_go)), True, color_border)
@@ -341,8 +388,12 @@ def routessub(window, canvas):
 
         canvas.blit(port_out_distance_text, port_out_distance_rect)
         canvas.blit(port_in_distance_text, port_in_distance_rect)
+        drift_drift.blit(port_out_distance_text, port_out_distance_rect)
+        drift_drift.blit(port_in_distance_text, port_in_distance_rect)
 
-        window.blit(canvas, (0, 0))
+
+        #window.blit(canvas_drift, (0, 0))
+        #window.blit(canvas, (0, 0))
 
         pygame.display.update()
         
@@ -369,8 +420,8 @@ def routessub(window, canvas):
 
                             canvas.blit(port_in_distance_text, port_in_distance_rect)
 
-                            window.blit(canvas, (0, 0))
-                            pygame.display.flip()
+                            #window.blit(canvas, (0, 0))
+                            #pygame.display.flip()
                             
                     for i in range(len(destination_unique_list)):
                         destination_button[i].clicked = True if destination_button_text_rect[i].collidepoint(event.pos) else False
@@ -388,8 +439,8 @@ def routessub(window, canvas):
 
                             canvas.blit(port_in_distance_text, port_in_distance_rect)
 
-                            window.blit(canvas, (0, 0))
-                            pygame.display.flip()
+                            #window.blit(canvas, (0, 0))
+                            #pygame.display.flip()
 
                     menubutton_clicked = True if menubuttontext_rect.collidepoint(event.pos) else False
                
@@ -405,8 +456,7 @@ def routessub(window, canvas):
                         else:
                             drift_show = True
                     
-                    #drift_button_clicked = True if drift_button_text_rect.collidepoint(event.pos) else False
-                    
+                   
                         
                        
                     

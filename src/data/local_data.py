@@ -138,7 +138,7 @@ ship_list_selected=[]
 smax=8
 mmax=3
 insurers_list=[]
-wind_mag=1.4
+wind_mag=2 # magnification of wind effect
 revenue_mult=3 # revenue multiplier
 damage_increment=200
 

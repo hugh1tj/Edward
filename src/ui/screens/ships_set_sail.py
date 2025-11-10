@@ -57,7 +57,7 @@ def ship_detail(window,canvas,selected_ship_number): ### for part 1 before ship 
     
     ship_detail_list.append("")
     ship_detail_list.append("BON VOYAGE !!!")
-        
+    #print("60 in ship detail",ship_list_selected[selected_ship_number].ship_name)
     
     #ship_detail_font=font20.render( ship_detail_text,True,'black')
     pygame.draw.rect(canvas, color_wash, ship_detail_rect)
@@ -201,8 +201,7 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
     w = 16 # for grid conversion
     h = 16
     
-    insurer_finances_table_x = 5
-    insurer_finances_table_y = 0
+
     menu_margin = 5
     menu_width = 200
     menu_height = 25
@@ -213,13 +212,16 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
     color_button='blue'
     color_header='red'
     
-    font18 = pygame.font.SysFont("Arial", 18, bold=False)
     font20 = pygame.font.SysFont("Arial", 20, bold=False)
     font22 = pygame.font.SysFont("Arial", 22, bold=False)
     font20g = pygame.font.SysFont("Georgia", 20, bold=False) 
     
-
     spritesheet = Spritesheet('src/assets/images/spritesheet.png')
+    wc,hc=canvas.get_size()
+    drift_drift = pygame.Surface((wc, hc))# for debugging
+    drift_drift.fill('white')
+
+
 
     map_map = TileMap('src/assets/data/newmap6Sep2025.csv', spritesheet)
     grid = local_data.mapx
@@ -227,24 +229,26 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
     img2 = pygame.image.load('src/assets/images/natlantictrimmedre.png')
     img2r = pygame.transform.scale(img2, (mapwidth, mapheight))  # map of north atlantic larger scale
     canvas.blit(img2r, (margin_x, margin_y))
-    map_map.draw_map(canvas)  ### use this to display drift, but not necessary for 'set sail'
+    map_map.draw_map(drift_drift)  # imports and displays sprites (from Tiles)
+    
     premiums_to_be_set_text=font22.render("  You need to negotiate premiums first !!!", True, color_text)
-    set_sail_button_text = font22.render(" Calculating Shortest Routes - please wait!!!", True,color_text)
+    set_sail_button_text = font22.render(" Click below left to prepare routes -", True,color_text)
     set_sail_button_text_rect = pygame.Rect(600, 400, 2.5 * menu_width, menu_height)
+    #set_sail_button_drift_text_rect=pygame.Rect(600, 400, 2.5 * menu_width, menu_height)
     pygame.draw.rect(canvas, color_wash, set_sail_button_text_rect)
     pygame.draw.rect(canvas, color_border, set_sail_button_text_rect, 2)
-    
+    #pygame.draw.rect(drift_drift, color_wash, set_sail_button_text_rect)
+    #pygame.draw.rect(drift_drift, color_border, set_sail_button_text_rect, 2)
     if premiums_set==True:
         canvas.blit(set_sail_button_text, set_sail_button_text_rect)
+        #drift_drift.blit(set_sail_button_text, set_sail_button_text_rect)
     else:
         premiums_set=False
         canvas.blit(premiums_to_be_set_text, set_sail_button_text_rect)
-    window.blit(canvas, (0, 0))
-    pygame.display.update()
+        #drift_drift.blit(premiums_to_be_set_text, set_sail_button_text_rect)
   
-    
+ 
     ### Create ship detail show buttons
-    
     
     buttonstart_x = 1250
     buttonstart_y = 20
@@ -274,49 +278,197 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
                 button_names.append([button_text_2_raw, 2])
     button = []
     buttontext_rect = []
+    button_drift_text_rect=[]
     #############display buttons########################
-    button_numb = len(button_names)
-    for i in range(button_numb):
-        button.append(
-            subroutines.Button(buttonstart_x, buttonstart_y+i * buttonheight, buttonwidth, buttonheight,
+
+    set_sail_waiting=True
+    #print ("283 button names",button_names)
+    while set_sail_waiting:
+        button_numb = len(button_names)
+        for i in range(button_numb):
+            button.append(
+                subroutines.Button(buttonstart_x, buttonstart_y+i * buttonheight, buttonwidth, buttonheight,
                                button_names[i][0],
                                button_names[i][1], "False"))
         
-    for i in range(button_numb):
-        if button[i].rect_color == 1: # headers
-            buttontext_rect.append(
-                subroutines.Button.button_rect_blit(button[i], canvas, color_border, color_text, color_wash))
-        elif button[i].rect_color == 0:
-            buttontext_rect.append(
-                subroutines.Button.button_rect_blit(button[i], canvas, color_button, color_text, color_wash))
-        else: # 2
-            buttontext_rect.append(
-                subroutines.Button.button_rect_blit(button[i], canvas, color_bg, color_text, color_wash))
-    for i in range(button_numb):  # draw coloured circles
-        for sj in range(0, smax):
-            if ship_list_selected[sj].ship_name in button_names[i][0]:
+        for i in range(button_numb):
+            if button[i].rect_color == 1: # headers
+                buttontext_rect.append(subroutines.Button.button_rect_blit(button[i], canvas, color_border, color_text, color_wash))
+                button_drift_text_rect.append(subroutines.Button.button_rect_blit(button[i], drift_drift, color_border, color_text, color_wash))
+            elif button[i].rect_color == 0:
+                buttontext_rect.append(
+                    subroutines.Button.button_rect_blit(button[i], canvas, color_button, color_text, color_wash))
+                button_drift_text_rect.append(subroutines.Button.button_rect_blit(button[i], drift_drift, color_button, color_text, color_wash))
+            else: # 2
+                buttontext_rect.append(
+                    subroutines.Button.button_rect_blit(button[i], canvas, color_bg, color_text, color_wash))
+                button_drift_text_rect.append(subroutines.Button.button_rect_blit(button[i], drift_drift, color_bg, color_text, color_wash))
+        for i in range(button_numb):  # draw coloured circles
+            for sj in range(0, smax):
+                if ship_list_selected[sj].ship_name in button_names[i][0]:
                 # print("found",ship_list_selected[sj].ship_name, button_names[i][0])
-                ship_color = local_data.list_colors[sj]
-                pygame.draw.circle(canvas, ship_color, (buttonstart_x+8, buttonstart_y + i * buttonheight + 10), 8)
-    window.blit(canvas, (0, 0))  
-    pygame.display.update()
+                    ship_color = local_data.list_colors[sj]
+                    pygame.draw.circle(canvas, ship_color, (buttonstart_x+8, buttonstart_y + i * buttonheight + 10), 8)
+                    pygame.draw.circle(drift_drift, ship_color, (buttonstart_x+8, buttonstart_y + i * buttonheight + 10), 8)
+          
+        
+        ### display menu buttons ################################
+        ### return to coffee ship menu
+        coffee_menu_button_text = font22.render("Coffee Shop Menu", True, color_border)
+        coffee_menu_button_clicked = False
+        coffee_menu_button_text_rect = pygame.Rect(menu_margin, 930, 3 * cell_width, cell_height)
+        pygame.draw.rect(canvas, color_wash, coffee_menu_button_text_rect)
+        pygame.draw.rect(canvas, color_border, coffee_menu_button_text_rect, 2)
+        canvas.blit(coffee_menu_button_text, coffee_menu_button_text_rect)
+        pygame.draw.rect(drift_drift, color_wash, coffee_menu_button_text_rect)
+        pygame.draw.rect(drift_drift, color_border, coffee_menu_button_text_rect, 2)
+        drift_drift.blit(coffee_menu_button_text, coffee_menu_button_text_rect)
 
-    ### display dots for ports and destinations########################
+
+        ### prepare routes button
+        prepare_routes_text = font22.render("Ready to Prepare Routes?", True, color_border)
+        prepare_routes_text_rect = pygame.Rect(5, 900,3 * cell_width, cell_height )
+        pygame.draw.rect(canvas, color_wash, prepare_routes_text_rect )
+        pygame.draw.rect(canvas, color_border,prepare_routes_text_rect  , 2)
+        canvas.blit(prepare_routes_text,prepare_routes_text_rect)
+        pygame.draw.rect(drift_drift, color_wash, prepare_routes_text_rect )
+        pygame.draw.rect(drift_drift, color_border,prepare_routes_text_rect  , 2)
+        drift_drift.blit(prepare_routes_text,prepare_routes_text_rect)
+
+        ### toggle switch for drift map on or off
+        toggle_drift_map_text = font22.render("Use Drift Map OR Ancient Map", True, color_border)
+        toggle_drift_map_text_rect = pygame.Rect(5, 870,3 * cell_width, cell_height )
+        pygame.draw.rect(canvas, color_wash, toggle_drift_map_text_rect )
+        pygame.draw.rect(canvas, color_border,toggle_drift_map_text_rect  , 2)
+        canvas.blit(toggle_drift_map_text,toggle_drift_map_text_rect)
+        pygame.draw.rect(drift_drift, color_wash, toggle_drift_map_text_rect )
+        pygame.draw.rect(drift_drift, color_border,toggle_drift_map_text_rect  , 2)
+        drift_drift.blit(toggle_drift_map_text,toggle_drift_map_text_rect)
+
+        
+        display_drift=False
+        display_select=True
+        while display_select:
+            #map_map.draw_map(drift_drift)  ### use this to display drift, but not necessary for 'set sail'    
+            # 
+            # 
+            
+            if display_drift==True:
+                #print("369 in display drift")
+                #window.blit(canvas, (0, 0))
+                window.blit(drift_drift, (0, 0))
+               
+            else:
+                #print("371 no drift display")   
+                window.blit(canvas, (0, 0))
+            pygame.display.update()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    
+                    pygame.quit()
+                
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    for i in range(0, len(button_names)):  
+                        button[i].clicked = True if buttontext_rect[i].collidepoint(event.pos) else False
+                        if button[i].clicked == True:
+                            print("374 button i clicked",i)
+                            for xl in range(button_numb):
+                                print("376 xl",xl)
+                                for sj in range(0, smax):
+                                    print ("377 found",ship_list_selected[sj].ship_name,button_names[i][0])
+                                    if ship_list_selected[sj].ship_name in button_names[i][0]:
+                                        print ("379 found",ship_list_selected[sj].ship_name,button_names[i][0])
+                                        selected_ship_number=sj
+
+                                        ship_detail(window,canvas,selected_ship_number)
+                                        ship_detail(window,drift_drift,selected_ship_number)
+                                        break
+            
+                    coffee_menu_button_clicked = True if coffee_menu_button_text_rect.collidepoint(event.pos) else False
+                    if coffee_menu_button_clicked == True:
+                        goinside.goinside_sub(window,canvas,from_key=1)
+
+                    prepare_routes_button_clicked = True if prepare_routes_text_rect.collidepoint(event.pos) else False
+                    if prepare_routes_button_clicked == True:
+                        display_select=False
+                        prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,map_map,premiums_set,button,button_names,buttontext_rect,display_drift)
+                    
+                    if toggle_drift_map_text_rect.collidepoint(event.pos) == True:
+                        if display_drift==True:
+                            display_drift = False
+                        else:
+                            display_drift = True
+                        #print("412 display_drift",display_drift)
+
+def prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,map_map,premiums_set,button,button_names,buttontext_rect,display_drift):
+    ship_list_selected = local_data.ship_list_selected # retrieve mirror  
+    smax=local_data.smax
+    button_numb = len(local_data.button_names)
+    cell_width=100
+    cell_height=25
+    
+  
+    list_width = 200
+    list_height = 25
+    w = 16 # for grid conversion
+    h = 16
+    
+
+    menu_margin = 5
+    menu_width = 200
+    menu_height = 25 
+    toggle_drift_map_text_rect = pygame.Rect(5, 870,3 * cell_width, cell_height )
+    coffee_menu_button_text_rect = pygame.Rect(menu_margin, 930, 3 * cell_width, cell_height)
+
+
+
+    color_wash = 'white'
+    color_text = 'black'
+    color_border = 'blue'
+    
+    color_header='red'
+    margin_x=0
+    margin_y=0
+    
+    font20 = pygame.font.SysFont("Arial", 20, bold=False)
+    font22 = pygame.font.SysFont("Arial", 22, bold=False)
+    font20g = pygame.font.SysFont("Georgia", 20, bold=False) 
+        ### display dots for ports and destinations########################
+    set_sail_button_text1 = font22.render(" Preparing Routes - Please Wait", True,color_text)
+    set_sail_button_text2 = font22.render(" Preparing Routes - Please Wait - XX", True,color_text)
+    #set_sail_button_text_rect = pygame.Rect(600, 400, 2.5 * menu_width, menu_height)
+    pygame.draw.rect(canvas, color_wash, set_sail_button_text_rect)
+    pygame.draw.rect(canvas, color_border, set_sail_button_text_rect, 2)
+    #pygame.draw.rect(drift_drift, color_wash, set_sail_button_text_rect)
+    #pygame.draw.rect(drift_drift, color_border, set_sail_button_text_rect, 2)
+    canvas.blit(set_sail_button_text1, set_sail_button_text_rect)
+    #drift_drift.blit(set_sail_button_text2, set_sail_button_text_rect)
+    
+    if display_drift==True: # to give immediate update before dots are plotted - which takes time
+            window.blit(drift_drift, (0, 0))     
+    else:
+            window.blit(canvas, (0, 0))
+    pygame.display.update()
+    
     for i in range(0,smax):
     
         ship_color = local_data.list_colors[i]
 
-        ports_tuple = ship_list_selected[i].get_port(i)  # gets the x,y coordinates of the originating port
-       
+        ship_list_selected[i].get_port(i)  # gets the x,y coordinates of the originating port and stores in ship_list_selected[i].ports_tuple[0]
+    
         ship_list_selected[i].ship_x_last=ship_list_selected[i].port_x # sets the initial conditions
         ship_list_selected[i].ship_y_last=ship_list_selected[i].port_y
         
         ship_list_selected[i].port_delay=i*2 # staggers departure of ships
-       
+    
         pygame.draw.circle(canvas, color_border, (ship_list_selected[i].ports_tuple[0]+margin_x, ship_list_selected[i].ports_tuple[1]+margin_y),
-                           10)
+                        10)
         pygame.draw.circle(canvas, color_header, (ship_list_selected[i].ports_tuple[2]+margin_x, ship_list_selected[i].ports_tuple[3]+margin_y),
-                           10)
+                        10)
+        pygame.draw.circle(drift_drift, color_border, (ship_list_selected[i].ports_tuple[0]+margin_x, ship_list_selected[i].ports_tuple[1]+margin_y),
+                        10)
+        pygame.draw.circle(drift_drift, color_header, (ship_list_selected[i].ports_tuple[2]+margin_x, ship_list_selected[i].ports_tuple[3]+margin_y),
+                        10)
         
         for k in range(0, len(ship_list_selected[i].path_go)-1):   # display paths as grid
                 #print("path go",ship_list_selected[i].path_go[k])
@@ -326,6 +478,8 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
             point_y1=ship_list_selected[i].path_go[k+1][1]
             pygame.draw.circle(canvas, ship_color, (point_y * 16, point_x * 16), 3)
             pygame.draw.line(canvas,ship_color,(point_y * 16, point_x * 16),(point_y1 * 16, point_x1 * 16), 1)
+            pygame.draw.circle(drift_drift, ship_color, (point_y * 16, point_x * 16), 3)
+            pygame.draw.line(drift_drift,ship_color,(point_y * 16, point_x * 16),(point_y1 * 16, point_x1 * 16), 1)
         for k in range(0, len(ship_list_selected[i].path_back)-1):
             point_x = ship_list_selected[i].path_back[k][0]
             point_y = ship_list_selected[i].path_back[k][1]
@@ -333,9 +487,10 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
             point_y1 = ship_list_selected[i].path_back[k + 1][1]
             pygame.draw.circle(canvas, ship_color, (point_y * 16, point_x * 16), 3)
             pygame.draw.line(canvas, ship_color, (point_y * 16, point_x * 16), (point_y1 * 16, point_x1 * 16), 1)
-        window.blit(canvas, (0, 0))
-        pygame.display.update()
-      
+            pygame.draw.circle(drift_drift, ship_color, (point_y * 16, point_x * 16), 3)
+            pygame.draw.line(drift_drift, ship_color, (point_y * 16, point_x * 16), (point_y1 * 16, point_x1 * 16), 1)
+        
+    
     if premiums_set==True:
         set_sail_button_text = font22.render("               Click to Set Sail   !!!", True, color_header)
     else:
@@ -344,18 +499,28 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
     pygame.draw.rect(canvas, color_wash, set_sail_button_text_rect)
     pygame.draw.rect(canvas, color_border, set_sail_button_text_rect, 2)
     canvas.blit(set_sail_button_text, set_sail_button_text_rect)
+    #pygame.draw.rect(drift_drift, color_wash, set_sail_button_text_rect)
+    #pygame.draw.rect(drift_drift, color_border, set_sail_button_text_rect, 2)
+    #drift_drift.blit(set_sail_button_text, set_sail_button_text_rect)
+    
     ship_detail(window, canvas, 1)  # default
-    window.blit(canvas, (0, 0))
+    ship_detail(window, drift_drift, 1)  # default
+    if display_drift==True:
+            window.blit(drift_drift,(0,0))
+    else:
+            window.blit(canvas, (0, 0))
     pygame.display.update()
-    set_sail_waiting=True
-    while set_sail_waiting:
+    click_to_sail_wait=True
+    while click_to_sail_wait==True:
+
         for event in pygame.event.get():
+            print("517 2nd event.get")
             if event.type == pygame.QUIT:
-                set_sail_waiting = False
+                click_to_sail_wait = False
                 pygame.quit()
             
             if event.type == pygame.MOUSEBUTTONDOWN:
-                
+            
                 for i in range(0, len(button_names)):  
                     button[i].clicked = True if buttontext_rect[i].collidepoint(event.pos) else False
                     if button[i].clicked == True:
@@ -364,31 +529,47 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
                                 if ship_list_selected[sj].ship_name in button_names[i][0]:
                                     selected_ship_number=sj
                                     ship_detail(window,canvas,selected_ship_number)
+                                    break
                     
                         
                 window.blit(canvas, (0, 0))
                 pygame.display.update()
+                #print("537 2nd event.get in mousedown")
+                
                 if set_sail_button_text_rect.collidepoint(event.pos) == True and premiums_set==True:
-                    set_sail_waiting=False
+                    click_to_sail_wait=False
+                    ship_display(window,canvas,drift_drift, img2r,display_drift)
                 elif premiums_set==True:
-                    set_sail_waiting=True
+                    click_to_sail_wait=True
                 else:
                     goinside.goinside_sub(window,canvas,from_key=1)
-  
-    ### time handling
-    canvas_drift=canvas
-    ship_display(window,canvas,canvas_drift, img2r,map_map)
-   
+                coffee_menu_button_clicked = True if coffee_menu_button_text_rect.collidepoint(event.pos) else False
+                if coffee_menu_button_clicked == True:
+                    goinside.goinside_sub(window,canvas,from_key=1)
+                
+                if toggle_drift_map_text_rect.collidepoint(event.pos) == True:
+                    if display_drift==True:
+                        display_drift = False
+                    else:
+                        display_drift = True
+                    #print("412 display_drift",display_drift)
+        print("557 click to sail wait",click_to_sail_wait)
+        print ("558 ready to ship display")
+        
+
    #-----------------SHIP DISPLAY-------------------------------------------------------------------------------
 
-def ship_display(window,canvas,canvas_drift, img2r,map_map):
-   
+def ship_display(window,canvas,drift_drift, img2r,display_drift):
+    if display_drift==True:
+        canvas_drift=drift_drift
+    else:
+        canvas_drift=canvas
     ship_list_selected = local_data.ship_list_selected # retrieve mirror
     insurers_list = local_data.insurers_list # retrieve mirror
     smax=local_data.smax
     mmax=local_data.mmax
     selected_ship_number=0 # until selected
-
+    
     ### Instantiate Weather Events ################################
     
     weather_events_list = []
@@ -399,9 +580,6 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
     if (len(local_data.weather_severities_chosen)>0): # if weather severities have been adjusted in Settings
         for iw in range(len(local_data.weather_events_list)):
             weather_events_list[iw].weather_settings_update(iw)
-    #print("401 len weather list", len(local_data.weather_events_list))
-    #print("402 len weather list", len(weather_events_list))
-    
     mapwidth=1500
     mapheight=mapwidth*.75
     margin_x=0
@@ -409,18 +587,11 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
    
     cell_width=100
     cell_height=25
-  
-    list_width = 200
-    list_height = 25
+
     w = 16 # for grid conversion
     h = 16
-   
-    insurer_finances_table_x = 5
-    insurer_finances_table_y = 0
     menu_margin = 5
-    menu_width = 200
-    menu_height = 25
-
+   
     convert_pixel = 16
     grid = local_data.mapx
 
@@ -439,17 +610,6 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
     font22 = pygame.font.SysFont("Arial", 22, bold=False)
     font20g = pygame.font.SysFont("Georgia", 20, bold=False) 
 
-    set_sail_button_start_x = 5
-    set_sail_button_start_y=50
-
-    
-    
-    distortion_factor = 1 # adjusted later for map distorition
-    drift_speed = 0.1 # ocean drift master value - a bit of a fudge try to quantify
-    
-    wind_speed_min = 24  # knots for windy events only
-    
-    convert_pixel = 16
     weather_sep = 0  # separates weater events
     game_speed_conv = 5000  # equals milliseconds timeactual time which equals one day of ship travel as game time (was 25714)
     alimit = 1# for debugging
@@ -461,20 +621,21 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
     ### Display Calculating which is then overwritten by set sail
     set_sail_button_clicked = False
     set_sail_button_start_x = 5
-    
+    gridtop_text_rect_old=pygame.Rect(0,0,5,5)
     wind_speed_min = 24  # knots for windy events only
     weather_sep = 0  # separates weater events - not currently used
     weather_disp_fract = 0.001  # fudge - needs some science
     drift_speed = 0.1 # ocean drift master value - a bit of a fudge try to quantify
-    
+    hazard=0
+    beached=False
     display_drift=True
     ship_log=[]
-    
-    canvas.blit(img2r, (0, 0))  # blit map first each and every time otherwise weather events and ships blur tracking
-    map_map.draw_map(canvas_drift)  # imports and displays sprites (from Tiles)
+    weather_state=False
+    canvas_drift.blit(img2r, (0, 0))  # blit map first each and every time otherwise weather events and ships blur tracking
+
    
     grid = local_data.mapx
-    window.blit(canvas, (0, 0))
+    
 
         ### TIME HANDLING ###
     mystarttime=pygame.time.get_ticks()
@@ -497,9 +658,9 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
         ship_x= ship_list_selected[i].ship_x
         ship_y= ship_list_selected[i].ship_y
         #print("649 ship_x_last", round(ship_x_last,1), "ship x ",round(ship_x,1)," ship_y_last", round(ship_y_last,1), "ship y ",round(ship_y,1))     
-        pygame.draw.circle(canvas, color_border, (ship_list_selected[i].ports_tuple[0]+margin_x, ship_list_selected[i].ports_tuple[1]+margin_y),
+        pygame.draw.circle(canvas_drift, color_border, (ship_list_selected[i].ports_tuple[0]+margin_x, ship_list_selected[i].ports_tuple[1]+margin_y),
                         10)
-        pygame.draw.circle(canvas, color_header, (ship_list_selected[i].ports_tuple[2]+margin_x, ship_list_selected[i].ports_tuple[3]+margin_y),
+        pygame.draw.circle(canvas_drift, color_header, (ship_list_selected[i].ports_tuple[2]+margin_x, ship_list_selected[i].ports_tuple[3]+margin_y),
                         10)
     window.blit(canvas, (0, 0))
     pygame.display.update()
@@ -507,6 +668,7 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
     running=True
     #------------------------------------RUNNING------------------------------------------------------
     while running:
+        canvas_drift.blit(img2r, (0, 0))  # blit map first each and every time otherwise weather events and ships blur tracking
         mytime = pygame.time.get_ticks()
         mytotal_time = mytime - mystarttime
         myinterval = mytime - mytime_last  # as play milliseconds
@@ -518,16 +680,11 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
         mytotal_time_months_res = mytotal_time_months - mytotal_time_years * 12
         mytotal_time_days_res = mytotal_time_days - mytotal_time_months * 30
         mytotal_time_years_res = mytotal_time_months - mytotal_time_years * 12
-        #print("515 myinterval ms",myinterval,"mytotal_time ms",mytotal_time,"my last time ms ",mytime_last,"interval_days",myinterval_days,"mytotal_time_days",mytotal_time_days,"mytotal_time_months",mytotal_time_months,"mytotal_time_days_res",mytotal_time_days_res,"mytotaltime_months_res",mytotal_time_months_res)
+        #print("683 myinterval ms",myinterval,"mytotal_time ms",mytotal_time,"my last time ms ",mytime_last,"interval_days",myinterval_days,"mytotal_time_days",mytotal_time_days,"mytotal_time_months",mytotal_time_months,"mytotal_time_days_res",mytotal_time_days_res,"mytotaltime_months_res",mytotal_time_months_res)
         
-        display_drift=True
-         
-        if display_drift==True:
-            map_map.draw_map(canvas_drift)
-            gridtop_text_rend,gridtop_text_rect=get_current(grid)
-            canvas_drift.blit(gridtop_text_rend, gridtop_text_rect)
-            window.blit(canvas_drift,(0,0))
-
+        gridtop_text_rend,gridtop_text_rect=get_current(grid)
+        canvas_drift.blit(gridtop_text_rend, gridtop_text_rect)
+        window.blit(canvas_drift,(0,0))
         journey_time_text_rect = pygame.Rect(5, 10, 350, 40)
         pygame.draw.rect(canvas, color_wash, journey_time_text_rect)  # avoid over writing previous entry
     
@@ -537,27 +694,36 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
                                           color_text)
         pygame.draw.rect(canvas, color_border, journey_time_text_rect, 2)  # avoid over writing previous entry
         canvas.blit(journey_time_text, journey_time_text_rect)
-       
-
-        
         window.blit(canvas_drift, (0, 0))
-
+    
         ### return to coffee ship menu
         coffee_menu_button_text = font22.render("Coffee Shop Menu", True, color_border)
         coffee_menu_button_clicked = False
-        coffee_menu_button_start_x=5
-        coffee_menu_button_text_rect = pygame.Rect(menu_margin, 900, 3 * cell_width, cell_height)
+        coffee_menu_button_text_rect = pygame.Rect(menu_margin, 930, 3 * cell_width, cell_height)
         pygame.draw.rect(canvas, color_wash, coffee_menu_button_text_rect)
         pygame.draw.rect(canvas, color_border, coffee_menu_button_text_rect, 2)
         canvas.blit(coffee_menu_button_text, coffee_menu_button_text_rect)
     
         ### toggle switch for ship insurer list on or off
         toggle_ship_insurer_list_text = font22.render("Toggle to see Insurers and Ships Gains and Losses: On/Off", True, color_border)
-        toggle_ship_insurer_list_text_rect = pygame.Rect(5, 930,5 * cell_width, cell_height )
+        toggle_ship_insurer_list_text_rect = pygame.Rect(5, 900,5 * cell_width, cell_height )
         toggle_ship_insurer_button=False
         pygame.draw.rect(canvas, color_wash, toggle_ship_insurer_list_text_rect )
         pygame.draw.rect(canvas, color_border,toggle_ship_insurer_list_text_rect  , 2)
         canvas.blit(toggle_ship_insurer_list_text,toggle_ship_insurer_list_text_rect)
+
+       
+
+        ### toggle switch for ship all routes on or off
+        all_routes_button_text = font22.render("All Routes/Selected Route", True, color_border)
+        all_routes_button_clicked = False
+        all_routes_button_start_x=5
+        all_routes_button_text_rect = pygame.Rect(menu_margin, 840, 3 * cell_width, cell_height)
+        pygame.draw.rect(canvas, color_wash, all_routes_button_text_rect)
+        pygame.draw.rect(canvas, color_border, all_routes_button_text_rect, 2)
+        canvas.blit(all_routes_button_text, all_routes_button_text_rect)
+
+
         
         buttonstart_x = 1250
         buttonstart_y = 20
@@ -601,19 +767,19 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
         for i in range(button_numb):
                 if button[i].rect_color == 1:
                     buttontext_rect.append(
-                        subroutines.Button.button_rect_blit(button[i], canvas, color_border, color_text, color_wash))
+                        subroutines.Button.button_rect_blit(button[i], canvas_drift, color_border, color_text, color_wash))
                 elif button[i].rect_color == 0:
                     buttontext_rect.append(
-                        subroutines.Button.button_rect_blit(button[i], canvas, color_button, color_text, color_wash))
+                        subroutines.Button.button_rect_blit(button[i], canvas_drift, color_button, color_text, color_wash))
                 else:  # 2
                     buttontext_rect.append(
-                        subroutines.Button.button_rect_blit(button[i], canvas, color_bg, color_text, color_wash))
+                        subroutines.Button.button_rect_blit(button[i], canvas_drift, color_bg, color_text, color_wash))
         for i in range(button_numb):
                 for sj in range(0, smax):
                     if ship_list_selected[sj].ship_name in button_names[i][0]:
 
                         ship_color = local_data.list_colors[sj]
-                        pygame.draw.circle(canvas, ship_color, (buttonstart_x + 8, buttonstart_y + i * buttonheight + 10),
+                        pygame.draw.circle(canvas_drift, ship_color, (buttonstart_x + 8, buttonstart_y + i * buttonheight + 10),
                                 8)
        
             ### SHIP ROUTE
@@ -629,14 +795,19 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
             #print("665 myinterval ms",myinterval,"mytotal_time ms",mytotal_time,"my last time ms ",mytime_last,"interval_days",myinterval_days,"mytotal_time_days",mytotal_time_days,"mytotal_time_months",mytotal_time_months,"mytotal_time_days_res",mytotal_time_days_res,"mytotaltime_months_res",mytotal_time_months_res)
             #print("674 ship_x_last", round(ship_x_last,1), "ship x ",round(ship_x,1)," ship_y_last", round(ship_y_last,1), "ship y ",round(ship_y,1))
             
-            pygame.draw.circle(canvas, ship_color, (ship_list_selected[i].ship_x, ship_list_selected[i].ship_y),
+            pygame.draw.circle(canvas_drift, ship_color, (ship_list_selected[i].ship_x, ship_list_selected[i].ship_y),
                                 ship_list_selected[i].marker_radius)
-            window.blit(canvas, (0, 0))     # to capture ship at port
+            window.blit(canvas_drift, (0, 0))     # to capture ship at port
 
            
             #################  KEY SUBROUTINE CALLS  #########################
             pay_premium(i,mytotal_time_years)
             weather_development(canvas,mytotal_time_months,mytotal_time_months_res,mytotal_time_days,mytotal_time_days_res,myinterval_days,weather_events_list)
+            if (hazard==1 or hazard==2 or hazard==4) and weather_state==True: # beached in storm or other weather event
+                beached=True
+            else:
+                beached=False
+            #print("660 beach cond,weather_state,hazard", ship_list_selected[i].ship_name,beached,weather_state,hazard)
             ship_x_last= ship_list_selected[i].ship_x_last
             ship_y_last= ship_list_selected[i].ship_y_last
             ship_x= ship_list_selected[i].ship_x
@@ -645,12 +816,12 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
             ship_waymarks_tuple=ship_waymarks(i,mytotal_time) # retrieves the waymarks for this stage of the ship's journey and if the ship has sailed from port or destination
             wp_next_x=ship_waymarks_tuple[2]
             wp_next_y=ship_waymarks_tuple[3]
-            ship_sail_ok=ship_port_delay(i,canvas, mytotal_time,mytotal_time_months,mytotal_time_days,mytotal_time_days_res,ship_color) # prevent ship from moving before allowed
-            #print("647 ship name",ship_list_selected[i].ship_name,"ship sail ok",ship_sail_ok)
-            if ship_sail_ok==True:
+            ship_sail_ok=ship_port_delay(i,canvas_drift, mytotal_time,mytotal_time_months,mytotal_time_days,mytotal_time_days_res,ship_color) # prevent ship from moving before allowed
+            #print("820 ship name",ship_list_selected[i].ship_name,"ship sail ok",ship_sail_ok)
+            if ship_sail_ok==True and beached==False: # and in water not beach, rocks, land in weaather event and is not at port
                 move_sail_x,move_sail_y=ship_move_sail(i,myinterval_days,wp_next_x,wp_next_y)# calculates the amount by which the ship has moved ue to its own sail power
                 move_drift_x,move_drift_y= ship_move_drift(i,grid)# calculates how much the ship has moved due to ocean drift
-                move_wind_x,move_wind_y=ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,weather_events_list,mmax, insurers_list)
+                move_wind_x,move_wind_y,weather_state=ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,weather_events_list,mmax, insurers_list,hazard)
             else:
                 move_sail_x=0
                 move_sail_y=0
@@ -658,7 +829,7 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
                 move_drift_y=0
                 move_wind_x=0
                 move_wind_y=0
-        
+            #print("682 move sail, x,y",move_sail_x,move_sail_y,"drift",move_drift_x,move_drift_y,"wind",move_wind_x,move_wind_y)
             ship_x=ship_x+move_sail_x+move_drift_x+move_wind_x           
             ship_y=ship_y+move_sail_y+move_drift_y+move_wind_y
             ship_list_selected[i].ship_x=ship_x
@@ -666,11 +837,10 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
             #print("707 at ship xy after ship_move_sail",ship_list_selected[i].ship_name,round(ship_list_selected[i].ship_x,1), round(ship_list_selected[i].ship_y,1))
             ship_list_selected[i].ship_x_last=ship_x
             ship_list_selected[i].ship_y_last=ship_y
-            evaluate_hazards(canvas,i,grid,mytotal_time_months,mytotal_time_days_res)
-          
-            #evaluate_hazards()# evaluates the hazards for the current position of the ship, e.g. rocks
-
-            pygame.draw.circle(canvas, ship_color, (ship_list_selected[i].ship_x, ship_list_selected[i].ship_y),
+            hazard=evaluate_hazards(canvas_drift,i,grid,mytotal_time_months,mytotal_time_days_res)
+            #print("841 hazard",hazard)
+           
+            pygame.draw.circle(canvas_drift, ship_color, (ship_list_selected[i].ship_x, ship_list_selected[i].ship_y),
                                 ship_list_selected[i].marker_radius)
             ###########check if close to next way point move to next way point#####################
                 
@@ -686,28 +856,29 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
             ship_list_selected[i].ship_event_x_list.append(ship_list_selected[i].ship_x) # event_x and event_y list hold actual track of ship
             ship_list_selected[i].ship_event_y_list.append(ship_list_selected[i].ship_y)
             #print("729 ship_x_last", ship_list_selected[i].ship_x_last, "ship x ",ship_list_selected[i].ship_x,"912 ship_y_last", ship_list_selected[i].ship_y_last, "ship y ",ship_list_selected[i].ship_y)
-            pygame.draw.circle(canvas, ship_color, (ship_list_selected[i].ship_x, ship_list_selected[i].ship_y),
+            pygame.draw.circle(canvas_drift, ship_color, (ship_list_selected[i].ship_x, ship_list_selected[i].ship_y),
                                 ship_list_selected[i].marker_radius)
             
                 
-            ship_destination_check(i,canvas,mytotal_time,mytotal_time_months,mytotal_time_days_res)
+            ship_destination_check(i,canvas_drift,mytotal_time,mytotal_time_months,mytotal_time_days_res)
            
                     ###################draw actual progress of ship ##############################
-            display_all_routes=True # for debugging
+            
             if display_all_routes==True:
                 ishow=i
             else:
                 ishow=selected_ship_number
+            ship_color = local_data.list_colors[ishow]
                 
-            #print ("1272 ishow at end of i loop",ishow)
+            #print ("873 ishow at end of i loop",ishow)
             for k in range(len(ship_list_selected[ishow].ship_event_x_list)):  # to track actual progress of ship
                     #print("1327 tracking progress - k",k)
-                    pygame.draw.circle(canvas, ship_color, (ship_list_selected[ishow].ship_event_x_list[k], ship_list_selected[ishow].ship_event_y_list[k]), 2)
+                    pygame.draw.circle(canvas_drift, ship_color, (ship_list_selected[ishow].ship_event_x_list[k], ship_list_selected[ishow].ship_event_y_list[k]), 2)
         
         if display_finances==True:
             #print("display finances")
             
-            subroutines.finances_sub(window, canvas)
+            subroutines.finances_sub(window, canvas_drift)
         
           ### display log
         #selected_ship_number=0 # for proof testing
@@ -716,7 +887,7 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
         ship_log_display(canvas, ship_list_selected[selected_ship_number].ship_log)
         
         
-        window.blit(canvas, (0, 0))     
+        window.blit(canvas_drift, (0, 0))     
         pygame.display.update()
         #print("860 at mytime_last")
         mytime_last = mytime
@@ -740,7 +911,7 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
                                         print ("selected ship number", selected_ship_number, ship_list_selected[selected_ship_number].ship_name)
 
 
-                    window.blit(canvas, (0, 0))
+                    window.blit(canvas_drift, (0, 0))
                     pygame.display.update()
 
                     coffee_menu_button_clicked = True if coffee_menu_button_text_rect.collidepoint(event.pos) else False
@@ -751,16 +922,14 @@ def ship_display(window,canvas,canvas_drift, img2r,map_map):
                             display_finances = False
                         else:
                             display_finances = True
-                    #if toggle_drift_map_text_rect.collidepoint(event.pos) == True:
-                        #if display_drift==True:
-                            #display_drift = False
-                        #else:
-                            #display_drift = True
-                    #if toggle_routes_display_text_rect.collidepoint(event.pos) == True:
-                        ##if display_all_routes==True:
-                            #display_all_routes = False
-                        #else:
-                            #display_all_routes = True
+                   
+                    
+
+                    if all_routes_button_text_rect.collidepoint(event.pos)==True:
+                        if display_all_routes==True:
+                            display_all_routes = False
+                        else:
+                            display_all_routes = True
 def ship_move_sail(i,myinterval_days,wp_next_x,wp_next_y):
             ############# displacement due to ship speed###############
             fudge=1 # for debugging
@@ -1022,20 +1191,21 @@ def ship_destination_check(i,canvas,mytotal_time,mytotal_time_months,mytotal_tim
 
 def get_current(grid):
     mx, my = pygame.mouse.get_pos()
+    #print("1048 mx,my",mx,my)
     font22g = pygame.font.SysFont("Georgia", 22, bold=False)
     color_border='blue'
-    list_width=200
+    list_width=300
     list_height=25
     #print("546 my,my mouse pos",mx,my)
-    if mx>1300: mxx=1300
+    if mx>1000: mxx=1000
     else: mxx=mx
-    if my>950: myy=950
+    if my>930: myy=930
     else: myy=my
     mx_tile = int(mxx / 16)
     my_tile = int(myy / 16)
     gridtop = int(grid[my_tile][mx_tile])
         # print("gridtop", gridtop)
-    gridtop_text_rect = pygame.Rect(mxx + 20, my, list_width,
+    gridtop_text_rect = pygame.Rect(mxx + 20, myy, list_width,
                                         list_height)
     if gridtop==-1:
         gridtop_text=""
@@ -1101,7 +1271,7 @@ def ship_move_drift(i,grid):
     #print('1039 i, ospeed_x,y', i, ospeedr_x, ospeedr_y)
     return(ospeedr_x,ospeedr_y)
 
-def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,weather_events_list,mmax, insurers_list):
+def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,weather_events_list,mmax, insurers_list,hazard):
 #############Consequences of proximity to weather event#####################
 ############### in fogs and storms navigation is very limited. Compas works but astrolabe does not since there is no sun or stars####
 ### ability of ship to chose a route whilst being tossed about in a storm is limited ###############
@@ -1109,28 +1279,30 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
     #print("1101 len weather list", len(weather_events_list))
     ship_list_selected = local_data.ship_list_selected  # retrieve mirror
     wind_mag=local_data.wind_mag # magnify wind effects
-    weather_disp_fract = 0.001  # fudge - needs some science
-    
+    weather_disp_fract = 0.01  # fudge - needs some science
+    weather_state=False
     for iw in range(0,len(weather_events_list)):
-        #print("1108 event type",weather_events_list[iw].event_type)
+        #print("1139 event type",i,weather_events_list[iw].event_type)
         if weather_events_list[iw].exists==True:
-            #print("11q- event type exists",weather_events_list[iw].event_type)
+            
+            #print("1142 event type exists",weather_events_list[iw].event_type)
             v1=pygame.math.Vector2(ship_list_selected[i].ship_x,ship_list_selected[i].ship_y)
             v2=pygame.math.Vector2(weather_events_list[iw].event_x,weather_events_list[iw].event_y)
             v3=v2-v1
             distance=v3.magnitude()
             fract_event_radius=1
-            angle_to_event = v1.angle_to(v2)
+            
             dist_x=ship_list_selected[i].ship_x-weather_events_list[iw].event_x
             dist_y=ship_list_selected[i].ship_y-weather_events_list[iw].event_y
-            angle_to_event_old=math.atan2(dist_y,dist_x)*180/math.pi
-            #print("1114 i,iw,angle to event",i,iw,angle_to_event,"angle to event old",angle_to_event_old)
-            if weather_events_list[iw].event_radius>0:
-                wind_speed=(weather_events_list[iw].wind_speed_max-weather_events_list[iw].wind_speed_min)*(1-weather_events_list[iw].event_radius/distance)
-                fract_event_radius=distance/weather_events_list[iw].event_radius
+            angle_to_event=math.atan2(dist_y,dist_x)*180/math.pi
+            
+            if weather_events_list[iw].event_radius>0 and distance<weather_events_list[iw].event_radius:
+                fract_event_radius=abs((weather_events_list[iw].event_radius-distance)/weather_events_list[iw].event_radius)
+                wind_speed=(weather_events_list[iw].wind_speed_max-weather_events_list[iw].wind_speed_min)*fract_event_radius
+                
                 if fract_event_radius<1: # ships is within weather event
-                    #print ("within weather event ",weather_events_list[iw].event_type)
-        
+                    #print ("1158 within weather event ",weather_events_list[iw].event_type)
+                    weather_state=True
                     if (weather_events_list[iw].event_type[0:3] == 'Fog'):
                         if distance < weather_events_list[iw].event_radius:
                             if (weather_events_list[iw].event_type[len(weather_events_list[iw].event_type) - 1] == 'E'):
@@ -1175,7 +1347,10 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
 
                             ship_list_selected[i].weather_disp_y = wind_mag*weather_disp_fract * myinterval_days * (wind_speed * 24 * math.cos(angle_to_event * math.pi / 180)) * (
                                                             1 - fract_event_radius)
-
+                            
+                            
+                            #if i==0:
+                                #print("1179",ship_list_selected[i].ship_name," v1",v1,"v2",v2,"v3",v3,"angle by atan",round(angle_to_event,3),"fract event radius",round(fract_event_radius,3),"wind speed",wind_speed," disp_x",round(ship_list_selected[i].weather_disp_x,3), "disp_y",round(ship_list_selected[i].weather_disp_y,3))
                             damage_text="Storm"
                             damage_random_sub(i, iw, damage_text, mytotal_time_months, mytotal_time_days_res,weather_events_list,ship_list_selected,mmax,insurers_list)
                         else:
@@ -1276,7 +1451,7 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
         move_wind_y= ship_list_selected[i].weather_disp_y
         
     
-    return(move_wind_x,move_wind_y)
+    return(move_wind_x,move_wind_y,weather_state)
         
         
 
@@ -1404,7 +1579,7 @@ def evaluate_hazards(canvas,i,grid,mytotal_time_months,mytotal_time_days_res):
                     ship_list_selected[i].ship_speed_reset(
                         i)  # to modify speed in accordance with new ship condition
                 #print("hazard damage", ship_list_selected[i].ship_name, ship_list_selected[i].ship_damage_accum)
-    return 
+    return( hazard_sq)
 
 
 def ship_log_display(canvas,ship_log):  ### for part 2 aftership sails. Player clicks to display ship detail
