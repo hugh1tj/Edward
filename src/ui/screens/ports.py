@@ -51,7 +51,7 @@ def ports(window,canvas):
     
    ### 11 RECTS ###
     port_text_rect = pygame.Rect(port_list_margin, port_list_start, port_list_width, port_list_height)
-    menubuttontext_rect = pygame.Rect(port_list_margin, 800, port_list_width, port_list_height)
+    menubuttontext_rect = pygame.Rect(port_list_margin, 1000, port_list_width, port_list_height)
 
 ### 12 LOAD IMAGES ###
 

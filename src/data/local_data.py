@@ -85,7 +85,7 @@ ports_waypoints_coord=[                         # as now picked out by mouse ove
     ['TestPoint3',700,200,1],
     ['TestPoint4',600,200,1],
          ]
-list_colors=['dark red','red','green','blue','dark orange','dark blue','dark green', 'black']
+list_colors=['dark red','red','violet','blue','dark orange','dark blue','dark green', 'black']
 list_tile_id=[' ','Beach','Rocks','No Significant Ocean Drift', 'Land', 'Labrador and Canaries Currents: N to S', 'Gulf Steam : SW to NE','North Atlantic Drift:  W to E', 'North Equatorial Current : E to W']
 
 weather_events_list=[('Hurricane_E',7,11,720,800,2,80,2,60,70,24,100,60,100,800,10000),('Hurricane_W',5,9,400,800,1,0,1,-10,10,24,110,60,100,800,10000),('Storms_W',0,6,310,539,2,-45,1,-50,-40,24,60,50,500,1000,50000 ),('Storms_E',0,7,850,450,1.5,-45,1.5 ,-60,-40,24,50,50,500,1000,50000 ),
@@ -96,18 +96,18 @@ weather_events_list=[('Hurricane_E',7,11,720,800,2,80,2,60,70,24,100,60,100,800,
 #name (0), month season start (1)#month season end(2), x (3), y (4), duration (5), trajectory (6),speed traverse knots (7), traj limit1(8), traj limit (9), min wind speed (10),
 # max wind speed (11), starting event radius (12),risk of damage to rigging (13),risk of damage to hull, (14), risk of shipwreck (15)
 # note use of trajectory limits discontinued
-weather_button_names=['Season Start (month)','Season End (month)','Coordinate X Start','Coordinate Y Start','Duration (months)',
-                             'Speed','Wind Speed min (knots)','Wind Speed max (knots)', 'Event Radius - Start','Damage Risk - Rigging','Damage_Risk - Hull','Shipwreck Risk']
+#weather_button_names=['Season Start (month)','Season End (month)','Coordinate X Start','Coordinate Y Start','Duration (months)',
+                             #'Speed','Wind Speed min (knots)','Wind Speed max (knots)', 'Event Radius - Start','Damage Risk - Rigging','Damage_Risk - Hull','Shipwreck Risk']
 
 
-
-insurer_premium_data=[('Algo1',1000,10),('Algo2',1000,9),('MyAlgo',1000,10)  ]
+insurer_names=['Stern','Ledger','Bartholomew']
+insurer_premium_data=[(insurer_names[0],1000,10),(insurer_names[1],1000,9),(insurer_names[2],1000,10)  ]
 # 1. name of insurer 2-6: risk preference references, 7. initial book value 8. % premium
 
-insurer_data=[('Algo1',4,6,7,13,8),('Algo2',12,7,6,13,5),('MyAlgo',12,7,6,4,13)]  # sort place in ship
+insurer_data=[(insurer_names[0],4,6,7,13,8),(insurer_names[1],12,7,6,13,8),(insurer_names[2],12,7,6,4,13)]  # sort place in ship
 
 
-insurer_data_labels={4:"Age",6:"Hull condition",7:"Rig Condition",8:"Revenue",12:"Long or Short Haul",13:"Place of Build"}
+insurer_data_labels={4:" Age",6:" Hull condition",7:" Rig Condition",8:" Revenue",12:" Long or Short Haul",13:" Place of Build"}
 #insurer name followed by 5 preferences First,Second,Third, Fourth, Fifth . 1 is age, 2 is Place of Build, 3 is Hull Condition, 4 is Rig Condition and 5 is Shipping Route (Short Medkium and Long Hau)
 # key [0. ship_list_selected[i].ship_name, 1. ship_list_selected[i].port, 2. ship_list_selected[i].destination,
 #                 3. ship_list_selected[i].tons,
@@ -117,12 +117,12 @@ insurer_data_labels={4:"Age",6:"Hull condition",7:"Rig Condition",8:"Revenue",12
 #                 10. round(ship_list_selected[i].ship_value), 11. round(ship_list_selected[i].ship_repair)])
 #                 12. Haul
 #                  13. Place of build  as place_of_build_preference
-risk_pref_labels_1 = ["Preference"," 1", " 2", " 3", " 4", "5"]
-risk_list_labels=["UnderWriter","Risk Factor","Age","Place of Build","Hull condition","Rig Condition","Revenue","Long or Short Haul"]
-risk_pref_title_labels=[" Underwriter","MyAlgo", "Preferences", "", "", ""]
-myalgo=["MyAlgo","","","","",""]
-algo1=["Algo1","","","","",""]
-algo2=["Algo2","","","","",""]
+risk_pref_labels= [" Underwriter"," 1", " 2", " 3", " 4", " 5"]
+risk_list_labels=[" Risk Factor"," Age"," Place of Build"," Hull condition"," Rig Condition"," Revenue"," Long or Short Haul"]
+
+#myalgo=[insurer_names[2],"","","","",""]
+#algo1=[insurer_names[0],"","","","",""]
+#algo2=[insurer_names[1],"","","","",""]
 inspref_list=[]
 myalgo_premium=0
 
@@ -142,5 +142,16 @@ wind_mag=1.4
 revenue_mult=3 # revenue multiplier
 damage_increment=200
 
-premium_select_labels=["Premium %",5,7.5,10,12.5,15,17.5,20]
-bidding_delay=2 # as seconds
+premium_select_labels=["Underwriter","Premium %",5,7.5,10,12.5,15,17.5,20]
+
+bidding_delay=0# as seconds
+bid_delay_labels=["Seconds",0,1,5,10,]
+bid_delay_default=1 # 1 second default bid delay
+bid_delay_select=999 # set by settings menu
+premiums_set=False
+
+weather_severity_labels=[""," Low"," Moderate"," Severe"]
+weather_severity_headers=[""," Hurricanes", " Storms", " Fog"," Icebergs"]
+weather_severity_default=["", " Low"," Moderate"," Moderate"," Moderate"]
+weather_severities_chosen=[] # for use in settings where chosen is inserted and in ship_set_sail where it is used (4 items)
+weather_duration_adjust=[0.5,1.5] # fractions with which duration and max wind speed are adjusted for Low and Severe weather severities

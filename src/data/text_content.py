@@ -5,7 +5,7 @@ mytext0 =('''This game is a simulation of Ship Insurance. It is based on the ear
 In this Basic Level there is just three Underwriters, and eight Ships and Ship Owners. One of the Underwriters is you - the player. The other Underwriters are computer players.
 More advanced levels will include multiple Underwriters, Ship Owners with fleets of ships, and further development of the insurance market concept.  
 
-The ships operate between various North Atlantic ports receiving revenue for the goods transported.During the journey there are several insurable perils: damage and even shipwrec due to hurricanes,storms, rocks, pirates, fog, icebergs,etc.
+The ships operate between various North Atlantic ports receiving revenue for the goods transported.During the journey there are several insurable perils: damage and even shipwreck due to hurricanes,storms, rocks, pirates, fog, icebergs,etc.
 The ship owners are interested to insure against losses, and send their representatives (insurance brokers) to the Edward Lloyd's Coffeehouse to negotiate premiums. You, the player,
 play the part of one of the insurers. What premium are you going to propose, and will you be prepared to negotiate. Beware - there are other insurers representatives in the Coffeehouse!''')
 
@@ -73,11 +73,19 @@ mytextgoinside=('''You are greeting by Edward Lloyd himself as you enter the Cof
  
  You look at the chronicle of ships due to sail, then adjust your risk preferences, and finally get down to offering premiums (click the buttons to the right)''')
 
-adjust_pref=('''Click on Grid Button in table on left to change your risk preference.
-Click on Grid Button below to change your % premium offer.
+adjust_pref=('''Instructions:
+Click on Grid Button in table on left to change your risk preference.
+Click on Grid Button in the table below to change your % premium offer.
  Beware: Reduce your offer to gain more business, with the risk of losing money through claims,
- Increase your premium offer to gain greater income, at the risk of losing business''')
+ Increase your premium offer in the grid below to gain greater income, at the risk of losing business!''')
 
 premiums_alt_error_text=("Error: You need to Offer Premiums first. Go back to Coffee House Menu")
 
 mytext_setsail=("Sunny but cold day today. Nice sailing weather, but rumour is that storms are brewing")
+
+bidding_settings_text=('''Select the delay between each round of bidding using the grid on the left.
+                       A larger delay will help the player observe how each insurer's bids are winning premiums.
+                       A shorter delay will speed up the allocation of premiums and enable Ships to Set Sail quickly!''')
+
+weather_severity_text=(''' Select the severity of North Atlantic storm and hurricane seasons using the grid on the left.
+                       Higher severities will increase both the frequency and strength of these weather events.''')

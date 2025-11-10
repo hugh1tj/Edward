@@ -41,27 +41,29 @@ def weather_sub_sub(window,canvas,img2r):
     font22 = pygame.font.SysFont("Arial", 22, bold=False)
     
     #pygame.time.delay(10000)# for debug
-    port_list_margin = 5
-    port_list_width = 200
-    port_list_height = 25
-    color_text = ('black')
-    color_border = ('blue')
-    color_dest = ('red')
+    list_margin = 5
+    list_width = 200
+    list_height = 25
+    color_text = 'black'
+    color_border = 'blue'
+    color_header = 'red'
     color_wash = "white"
-    weather_disp_fract = 0.01  # fudge - needs some science
+    
     running = True
     wind_speed_min = 24  # knots for windy events only
     weather_sep=0 # separates weater events
     game_speed_conv = 5000  # 25714 milliseconds game time equals one day of ship travel
-    font20 = pygame.font.SysFont("Arial", 20, bold=False)
-    font22 = pygame.font.SysFont("Arial", 22, bold=False)
-    
+   
     
 ### 9 CREATION OF LISTS ###
-    weather_events_list_len = (len(local_data.weather_events_list)) # instatiates all possible weather events
+  
     weather_events_list = []
     for iw in range(len(local_data.weather_events_list)):
         weather_events_list.append(subroutines.Weather_event(iw))  # instantiates for all types of weather event
+    if (len(local_data.weather_severities_chosen)>0):
+        for iw in range(len(local_data.weather_events_list)):
+            weather_events_list[iw].weather_settings_update(iw)
+        
 ### 11 RECTS ###
     journey_time_text_rect = pygame.Rect(10, 5, 400, 25)
     mystarttime = pygame.time.get_ticks()
@@ -84,7 +86,7 @@ def weather_sub_sub(window,canvas,img2r):
         mytotal_time_months_res = mytotal_time_months - mytotal_time_years * 12
         mytotal_time_days_res = mytotal_time_days - mytotal_time_months * 30
         mytotal_time_years_res = mytotal_time_months - mytotal_time_years * 12
-        pygame.draw.rect(canvas, 'white', journey_time_text_rect)  # avoid over writing previous entry
+        pygame.draw.rect(canvas, color_wash, journey_time_text_rect)  # avoid over writing previous entry
 
         journey_time_text = font20.render(str(mytotal_time_years) + " years" +
                                           "  " + str(mytotal_time_months_res) + " months " + str(
@@ -95,8 +97,8 @@ def weather_sub_sub(window,canvas,img2r):
        
         menubuttontext = font22.render(" Go back to Main Menu", True, color_text)
         menubutton_clicked = False
-        menubuttontext_rect = pygame.Rect(port_list_margin, 800, port_list_width, port_list_height)
-        pygame.draw.rect(canvas, "white", menubuttontext_rect)
+        menubuttontext_rect = pygame.Rect( list_margin, 800,list_width,list_height)
+        pygame.draw.rect(canvas, color_wash, menubuttontext_rect)
         pygame.draw.rect(canvas, color_border, menubuttontext_rect, 2)
         canvas.blit(menubuttontext, menubuttontext_rect)
 

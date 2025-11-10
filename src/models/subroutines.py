@@ -3,6 +3,8 @@ from ..data import local_data
 from ..utils import pathfinding as astar
 import random
 import math
+from datetime import datetime
+
 class Button(object):
     def __init__(self, x, y, w, h, text, rect_color, clicked):
         self.x = x
@@ -24,7 +26,10 @@ class Button(object):
         #color_text=('orange')
         button_text = font22.render(self.text, True, color_text)
         pygame.draw.rect(screen, color_wash, button_rect, )  # erases any visible data
-        pygame.draw.rect(screen, color_rect, button_rect, 2)
+        if color_rect=='red':
+            pygame.draw.rect(screen, color_rect, button_rect, 3)
+        else:
+            pygame.draw.rect(screen, color_rect, button_rect, 1)
         screen.blit(button_text, button_rect)
         return (button_rect)
 
@@ -164,14 +169,14 @@ class Ship():
         self.marker_radius = 5
         self.ship_insurer = ""
         self.ship_event_y_list = []
-        if str(self.ship_insurer)=="Uninsured":
+        if self.ship_premium==0:
 
             self.ship_log = ["Ship Log Details for ship " + self.ship_name,
-                         "for other ships click on ship name buttons - top left", "This ship " + "has not been insured. " ,"Leaving Port Rig Condition:"+str(self.rig_condition_base)+ " Hull Condition:"+str(self.hull_condition_base)+" "+str(round(self.ship_speed_cond,1))+" knots"]
+                         "for other ships click on ship name buttons - top right", "This ship " + "has not been insured. " ,"Leaving Port Rig Condition:"+str(self.rig_condition_base)+ " Hull Condition:"+str(self.hull_condition_base)+" "+str(round(self.ship_speed_cond,1))+" knots"]
         else:
             
             self.ship_log = ["Ship Log Details for ship " + self.ship_name,
-                         "for other ships click on ship name buttons - top left", "This ship " + "is insured by " + str(
+                         "for other ships click on ship name buttons - top right", "This ship " + "is insured by " + str(
                 self.ship_insurer) + " at a premium of £" + str(self.ship_premium),"Leaving Port Rig Condition:"+str(self.rig_condition_base)+ " Hull Condition:"+str(self.hull_condition_base)+" "+str(round(self.ship_speed_cond,1))+" knots"]
         
         return
@@ -204,13 +209,19 @@ class Ship():
 
     def ship_log_update(self, i):
         self.ship_log[0]="Ship Log Details for ship " + self.ship_name
-        self.ship_log[1]=  "for other ships click on ship name buttons - top left"
-        self.ship_log[2]= "This ship is insured by "+  str(
-                self.ship_insurer) + " at a premium of £" + str(self.ship_premium)
-        self.ship_log[3] = "Leaving Port Rig Condition:"+str(self.rig_condition)+ " Hull Condition:"+str(self.hull_condition) +" "+str(round(self.ship_speed_cond,1))+" knots"
-        #self.ship_log = ["Ship Log Details for ship " + self.ship_name,
-                         #"for other ships click on ship name buttons - top left", "This ship " + "is insured by " + str(
-                #self.ship_insurer) + " at a premium of £" + str(self.ship_premium)]
+        self.ship_log[1]=  "for other ships click on ship name buttons - top right"
+        
+        if self.ship_premium==0:
+            #self.ship_log[2]="X" # for debugging
+            self.ship_log[2] =" This ship has not been insured. "
+           
+        else:
+            #self.ship_log[2]="Y" # for debugging
+            self.ship_log[2] = "This ship is insured by " + str(self.ship_insurer)  + " at a premium of £" + str(self.ship_premium)
+        
+        self.ship_log[3]="Leaving Port Rig Condition:"+str(self.rig_condition_base)+ " Hull Condition:"+str(self.hull_condition_base)+" "+str(round(self.ship_speed_cond,1))+" knots"
+        
+        return
 
     def ship_finance_update(self, i):
         self.ship_balance_ins = self.revenue_accum - self.ship_premium
@@ -299,7 +310,7 @@ class Weather_event():
         self.speed = local_data.weather_events_list[i][7]
         self.traj_boundary_plus = local_data.weather_events_list[i][8]
         self.traj_boundary_minus = local_data.weather_events_list[i][9]
-        self.wind_speed_mi = local_data.weather_events_list[i][10]  # max wind speed in knots
+        self.wind_speed_min = local_data.weather_events_list[i][10]  # min wind speed in knots
         self.wind_speed_max = local_data.weather_events_list[i][11]  # max wind speed in knots
         self.starting_event_radius = local_data.weather_events_list[i][12]
         self.rig_damage_risk=local_data.weather_events_list[i][13]
@@ -348,31 +359,53 @@ class Weather_event():
         self.wind_speed=0 # knots init
         self.month_end_reset =mytotal_time_months
         #print ("in weather reset")
+    
+    def weather_settings_update(self,iw):
+        
+        weather_settings=local_data.weather_severities_chosen
+        weather_severity_headers=local_data.weather_severity_headers  
+    
+        #print ("weather event slice",weather_slice)
+        for xw in range(0,len(weather_severity_headers)):
+            weather_header_slice=weather_severity_headers[xw][1:4]
+            #print("weather header slice",weather_header_slice)
+            if self.event_type[0:3]==weather_header_slice:
+                print ("match found", weather_header_slice)
+                weather_item_chosen_severity=weather_settings[xw-1]# -1 because weather severities chosen has a blank in the first entry
+                print("chosen severity",weather_item_chosen_severity)
+                if weather_item_chosen_severity=="Low":
+                        self.duration=self.duration * local_data.weather_severity_default[0] # converts to days and adjusts for severity
+                        self.wind_speed_max= self.wind_speed_max* local_data.weather_severity_default[0]
+                        self.rig_damage_risk=self.rig_damage_risk*local_data.weather_severity_default[0]
+                        self.hull_damage_risk=self.hull_damage_risk*local_data.weather_severity_default[0]
+                        self.shipwreck_damage_risk=self.shipwreck_damage_risk*local_data.weather_severity_default[0]
+
+                elif weather_item_chosen_severity=="Severe":
+                        
+                        self.duration=self.duration * local_data.weather_severity_default[1] # converts to days and adjusts for severity
+                        self.wind_speed_max= self.wind_speed_max* local_data.weather_severity_default[1]
+                        self.rig_damage_risk=self.rig_damage_risk*local_data.weather_severity_default[1]
+                        self.hull_damage_risk=self.hull_damage_risk*local_data.weather_severity_default[1]
+                        self.shipwreck_damage_risk=self.shipwreck_damage_risk*local_data.weather_severity_default[1]
+
+                else:
+                        pass
 
     def drift_event(self, myinterval_days,j): # interval is passed as milliseconds
 
             ##### Randomise weather  trajectory within limits######
 
-            #traj_boundary_plus=self.traj_boundary_plus
-            #traj_boundary_minus=self.traj_boundary_minus
             traj_limit=10 # degrees
-            #if self.trajectory<traj_boundary_plus:
-                #self.trajectory=traj_boundary_plus
-            #elif self.trajectory>traj_boundary_minus:
-                #self.trajectory=traj_boundary_minus
-            #else:
             self.trajectory = self.trajectory_base + random.randint(-traj_limit, +traj_limit)
-            #if j==0:
-                #print("trajectory degrees",self.trajectory)
+            
             ####################################################
-            myinterval_days=myinterval_days
-            #print ('weather trajectory', self.trajectory)
-            incr_x_naut=-myinterval_days*24*self.speed  * math.sin(self.trajectory * math.pi / 180) # speed is in knots, which equates to 1 pixel per second (see pseudocode)
-            incr_y_naut = -myinterval_days * 24 * self.speed * math.cos(self.trajectory * math.pi / 180)
+            fudge=0.1 # speed was too high to be debugged
+            incr_x_naut=fudge*(-myinterval_days)*24*self.speed  * math.sin(self.trajectory * math.pi / 180) # speed is in knots, which equates to 1 pixel per second (see pseudocode)
+            incr_y_naut =fudge*( -myinterval_days) * 24 * self.speed * math.cos(self.trajectory * math.pi / 180)
             incr_x=incr_x_naut/3 # as pixels
             incr_y=incr_y_naut/3
             self.event_x = self.event_x + incr_x # speed is in knots
-            #print ('incr_x',incr_x,'incr y', incr_y)
+            #print ('weather drift event incr_x',incr_x,'incr y', incr_y, "speed",self.speed,"myinterval_days",myinterval_days)
             self.event_y = self.event_y + incr_y
             # Calculate wind speed with a peak in the middle of duration
             event_fraction=self.age/self.duration
@@ -514,16 +547,26 @@ def draw_one_column_list(canvas, one_column_list, cell_width, cell_height,paddin
         y = table_start_y + row_index * (cell_height + paddingy) + paddingy
 
         width=1
-        
+        color_bg='black'
         back_color = 'blue'
-        pygame.draw.rect(canvas, 'white', (x, y, cell_width, cell_height))
+        if str(row)=="":
+                
+            width = 1
+            back_color = color_bg
+            pygame.draw.rect(canvas,'black', (x, y, cell_width, cell_height))
+
+        else:
+            width=2
+            back_color = 'blue'
+            pygame.draw.rect(canvas, 'white', (x, y, cell_width, cell_height))
+            
         if row_index<=row_head-1:
-                pygame.draw.rect(canvas, 'red', (x, y, cell_width, cell_height),width)
+            if str(row)=="":
+                   pygame.draw.rect(canvas, 'black', (x, y, cell_width, cell_height))  
+            else:
+                    pygame.draw.rect(canvas, 'red', (x, y, cell_width, cell_height),width)
         else:
                 pygame.draw.rect(canvas, back_color, (x, y, cell_width, cell_height),width)
-        
-        
-
             # Render text
         text = font_use.render(str(row), True, 'black')
         text_rect = text.get_rect(center=(x + cell_width // 2, y + cell_height // 2))
@@ -655,11 +698,11 @@ def blit_text(surface, text_lines, rect, color):  # prints a list as text with a
         #print ("text lines",text_lines)
         yq = rect.top
         line_spacing = -2
-        font20 = pygame.font.SysFont("Arial", 20, bold=False)
+        font20g = pygame.font.SysFont("Georgia", 20, bold=False)
         for line in text_lines:
-            text_surface = font20.render(line, True, color)
+            text_surface = font20g.render(line, True, color)
             surface.blit(text_surface, (rect.left, yq))
-            yq += font20.get_linesize() + line_spacing
+            yq += font20g.get_linesize() + line_spacing
 
 
 def i_to_grid(i, ROWS, COLS):  # including titles
@@ -686,11 +729,14 @@ def insurer_finances_nested_list_sub(window,canvas,insurer_finances_table_x,insu
     cell_height = 25
 
     insurer_finances_cell_width = 150
+    ins_table_title="Insurer","Finances"
     ins_row_title1 = "Insurer"
+    rows_list0 = []
     rows_list1 = []
     rows_list2 = []
     rows_list3 = []
     rows_list4 = []
+    rows_list0.append(ins_table_title)
     rows_list1.append(ins_row_title1)
     for m in range(0, mmax):
         rows_list1.append(insurers_list[m].insurer_name)
@@ -706,6 +752,7 @@ def insurer_finances_nested_list_sub(window,canvas,insurer_finances_table_x,insu
     rows_list4.append(ins_row_title4)
     for m in range(0, mmax):
         rows_list4.append(round(insurers_list[m].balance))
+    insurer_finances_nested_list.append(rows_list0)
     insurer_finances_nested_list.append(rows_list1)
     insurer_finances_nested_list.append(rows_list2)
     insurer_finances_nested_list.append(rows_list3)
@@ -715,12 +762,95 @@ def insurer_finances_nested_list_sub(window,canvas,insurer_finances_table_x,insu
                               padding_y,
                               insurer_finances_table_y, insurer_finances_table_x, 20, 2, 0)
 
-    ### SHIP LIST BY INSURER
-def ship_list_by_insurer_sub(window,canvas,color_bg,slist_x,slist_y):
+    ### display finances
+def finances_sub(window,canvas):
+    
+    insurer_table_x,insurer_table_y=20,100
+
+    slist_x,slist_y=20,250
+    slist_w,slist_h=1000,800
+   
+
+    color_bg='black'
+    color_border='blue'
+    color_wash='white'
+    font20g = pygame.font.SysFont("Georgia", 20, bold=False)
+    finances_rect=(insurer_table_x,insurer_table_y,slist_w,slist_h)
+    pygame.draw.rect(canvas,color_wash,finances_rect)
+    pygame.draw.rect(canvas,color_border,finances_rect,2)
+    finances_text=""
+   
+    finances_text_rend=font20g.render(finances_text,True,color_bg)
+    canvas.blit(finances_text_rend, finances_rect)
+
+   
+    
+
+
+
+    #### INSURERS TABLE
+    padding_x = 2
+    padding_y = 0
+    mmax = local_data.mmax
+    insurers_list = local_data.insurers_list  # retrieve mirror
+    for m in range (0,mmax):
+        insurers_list[m].insurer_update(m)
+    insurer_finances_nested_list=[]
+    cell_height = 25
+
+    insurer_finances_cell_width = 150
+    ins_table_title0='Insurer Finances:'
+    ins_row_title1 = "Insurer Name"
+    
+    
+    rows_list0 = []
+    rows_list1 = []
+    rows_list2 = []
+    rows_list3 = []
+    rows_list4 = []
+    rows_list0.append(ins_table_title0)
+    rows_list1.append(ins_row_title1)
+    for m in range(0, mmax):
+        rows_list1.append(insurers_list[m].insurer_name)
+    ins_row_title2 = "Premiums Income"
+    rows_list2.append(ins_row_title2)
+    for m in range(0, mmax):
+        rows_list2.append(insurers_list[m].premiums_income_accum)
+    ins_row_title3 = "Claims"
+    rows_list3.append(ins_row_title3)
+    for m in range(0, mmax):
+        rows_list3.append(round(insurers_list[m].claims))
+    ins_row_title4 = "Balance"
+    rows_list4.append(ins_row_title4)
+    ins_bal_win=0
+    ins_bal_win_name=""
+    for m in range(0, mmax):
+        rows_list4.append(round(insurers_list[m].balance))
+        if insurers_list[m].balance>ins_bal_win:
+            ins_bal_win=insurers_list[m].balance
+            ins_bal_win_name=insurers_list[m].insurer_name
+
+    insurer_finances_nested_list.append(rows_list0)   
+    insurer_finances_nested_list.append(rows_list1)
+    insurer_finances_nested_list.append(rows_list2)
+    insurer_finances_nested_list.append(rows_list3)
+    insurer_finances_nested_list.append(rows_list4)
+    draw_grid_tjh(canvas, insurer_finances_nested_list, insurer_finances_cell_width, cell_height,
+                              padding_x,
+                              padding_y,
+                              insurer_table_y, insurer_table_x, 20, 2, 0)
+    
+
+
+
+
+    ###SHIPS TABLE
+
+
 
     slist = []
-    slist.append(["Ships Listed", "Premium Paid", "Damage/Claims"," Revenue","Balance","Theoretical Balance"])
-    slist.append(["by Insurer","","","","if Insured", "if not insured"])
+    slist.append(["Ships Listed", "Premium Paid", "Damage/Claims"," Revenue","Balance"])
+    slist.append(["by Insurer","","",""])
     mmax = local_data.mmax
     smax=local_data.smax
     ship_list_selected=local_data.ship_list_selected
@@ -746,32 +876,99 @@ def ship_list_by_insurer_sub(window,canvas,color_bg,slist_x,slist_y):
                 #print((ship_list_selected[sj].ship_damage_accum), round(ship_list_selected[sj].revenue_accum), round(
                     #ship_list_selected[sj].ship_balance_ins), round(ship_list_selected[sj].ship_balance_unins))
                 # slist.append(["", ""])
-                slist.append([ship_list_selected[sj].ship_name,  ship_list_selected[sj].ship_premium_accum,round(ship_list_selected[sj].ship_damage_accum),round(ship_list_selected[sj].revenue_accum),round(ship_list_selected[sj].ship_balance_ins),round(ship_list_selected[sj].ship_balance_unins)])
+                slist.append([ship_list_selected[sj].ship_name,  ship_list_selected[sj].ship_premium_accum,round(ship_list_selected[sj].ship_damage_accum),round(ship_list_selected[sj].revenue_accum),round(ship_list_selected[sj].ship_balance_ins)])
         #slist.append(["", ""])
     slist.append(["Uninsured",""])
     for sj in range(0,smax):
             if ship_list_selected[sj].ship_insurer=="Uninsured":
-                slist.append([ship_list_selected[sj].ship_name,  ship_list_selected[sj].ship_premium_accum,round(ship_list_selected[sj].ship_damage_accum),round(ship_list_selected[sj].revenue_accum),round(ship_list_selected[sj].ship_balance_ins),round(ship_list_selected[sj].ship_balance_unins)])
+                slist.append([ship_list_selected[sj].ship_name,  ship_list_selected[sj].ship_premium_accum,round(ship_list_selected[sj].ship_damage_accum),round(ship_list_selected[sj].revenue_accum),round(ship_list_selected[sj].ship_balance_ins)])
                 
 
     #print ("slist",slist)
     slist_nested = slist
     #slist_y = 200
-    total_ins=0
-    total_unins=0
-    for sj in range (0,smax):
-        total_ins+=ship_list_selected[sj].ship_balance_ins
-        total_unins+=ship_list_selected[sj].ship_balance_unins
-
-    if total_ins>total_unins:
-        ship_ins_string="Insured Ship"
-    else:
-        ship_ins_string = "UnInsured Ship"
-    slist.append([ship_ins_string, ""
-                                   "Finances Better", "", "Total",
-                  round(total_ins), round(total_unins)])
+   
     draw_grid_with_blanks(canvas, slist_nested, insurer_finances_cell_width, cell_height,
                                       padding_x,
                                       padding_y,
-                                      slist_x,slist_y , 20, 2, 0,color_bg)
+                                      slist_y,slist_x , 20, 2, 0,color_wash)
+    
+    insurer_win_flash_x=50
+    insurer_win_flash_y=600
 
+    insurer_win_flash_rect=(insurer_win_flash_x,insurer_win_flash_y,400,40)
+    pygame.draw.rect(canvas,color_wash,insurer_win_flash_rect)
+    pygame.draw.rect(canvas,color_border,insurer_win_flash_rect,2)
+    insurer_win_flash_text="Winning Insurer at this point: "+ ins_bal_win_name
+   
+    insurer_win_flash_text_rend=font20g.render(insurer_win_flash_text,True,color_bg)
+    canvas.blit(insurer_win_flash_text_rend, insurer_win_flash_rect)
+    ### DISPLAYS SHIP WITH BEST FINANCE
+    ship_win_flash_x=50
+    ship_win_flash_y=700
+    ship_win_balance=-10000 #since early balances can be negative
+    ship_win_name="J"
+
+    for sw in range (0,smax):
+        if ship_list_selected[sw].ship_balance_ins>ship_win_balance:
+            ship_win_balance=ship_list_selected[sw].ship_balance_ins
+            ship_win_name=ship_list_selected[sw].ship_name
+
+
+
+    ship_win_flash_rect=(ship_win_flash_x,ship_win_flash_y,400,40)
+    pygame.draw.rect(canvas,color_wash,ship_win_flash_rect)
+    pygame.draw.rect(canvas,color_border,ship_win_flash_rect,2)
+    ship_win_flash_text="Winning Ship at this point: "+ ship_win_name
+   
+    ship_win_flash_text_rend=font20g.render(ship_win_flash_text,True,color_bg)
+    canvas.blit(ship_win_flash_text_rend, ship_win_flash_rect)
+
+
+
+def bid_flash(canvas,bid_flash_text,bid_flash_x,bid_flash_y,alt):
+            width=400
+            height=30
+            bid_flash_rect=pygame.Rect(bid_flash_x, bid_flash_y,width,height)
+           
+            pygame.draw.rect(canvas, "white", bid_flash_rect)
+            if alt==0:
+                pygame.draw.rect(canvas,'blue',bid_flash_rect,1)
+                canvas.blit(bid_flash_text, bid_flash_rect)
+            else:
+                pygame.draw.rect(canvas,'gold',bid_flash_rect)
+            
+                canvas.blit(bid_flash_text, bid_flash_rect)
+
+
+def won_flash(canvas,won_flash_text,won_flash_x,won_flash_y,alt):
+            width=400
+            height=30
+            won_flash_rect=pygame.Rect(won_flash_x, won_flash_y,width,height)
+           
+            pygame.draw.rect(canvas, "white", won_flash_rect)
+            if alt==0:
+                pygame.draw.rect(canvas,'blue',won_flash_rect,1)
+                canvas.blit(won_flash_text, won_flash_rect)
+            else:
+                pygame.draw.rect(canvas,'darkblue',won_flash_rect,5)
+            
+                canvas.blit(won_flash_text, won_flash_rect)      
+
+def pulser(last_second): # note this replace pygame.time which works from the time the pygame is initiated. Python datetime.now is more uiversal - preparing for multiple users
+    #print("last_second-i",last_second)
+    pulse=0
+    current_timestamp=datetime.now()
+    timestamp_s=current_timestamp.timestamp()
+    timestamp_string = current_timestamp.strftime("%Y-%m-%d %H:%M:%S")
+    this_second=int(timestamp_s)
+    if this_second!=last_second:
+        pulse=this_second-last_second
+        #print("pulse",pulse)
+        last_second=this_second
+    #print(timestamp_string)
+    #print (timestamp_s)
+        #print("last_second -o",last_second)
+    return(last_second,pulse)
+
+      

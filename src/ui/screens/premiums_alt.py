@@ -31,7 +31,17 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
     smax = local_data.smax
     slength = smax  # for adjusting length of premiums_offered_nested_list and display
     mmax = len(local_data.insurer_data)
-    bidding_delay_ms=1000*local_data.bidding_delay
+    bid_transfer=False
+    if local_data.bid_delay_select==999: # marker that settings has not been used
+        bidding_delay=local_data.bidding_delay
+    else:
+        if bid_transfer==False:
+            bidding_delay=int(local_data.bid_delay_select)
+            bid_transfer=True
+        else:
+            pass
+    bidding_delay_ms=1000*bidding_delay     
+    #print("38 bidding delay, ms",bidding_delay,bidding_delay_ms)
     fail_round=True
     fail_round_accum=0
     premium_below=-1
@@ -51,16 +61,18 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
     title2c_text=font22.render("Uninsured",True,color_text)
     menubuttontext = font22.render(" Go back to Main Menu", True, color_text)
     menu_button_start_x = 800
+    
     cell_width_title = 200
     cell_height_menu = 25
     cell_height = 20
+    title_height=30
     marginx = 20
     marginy = 20
     size_canv = canvas.get_size()
     size_width = size_canv[0] - 2 * marginx  # for a border
     coffee_menu_button_text = font22.render("Coffee Shop Menu", True, color_border)
-    menubuttontext_rect = pygame.Rect(menu_button_start_x, 900, cell_width_title, cell_height_menu)
-    coffee_menu_button_text_rect = pygame.Rect(menu_button_start_x, 900, cell_width_title, cell_height_menu)
+    menubuttontext_rect = pygame.Rect(menu_button_start_x, 950, cell_width_title, cell_height_menu)
+    coffee_menu_button_text_rect = pygame.Rect(menu_button_start_x, 950, cell_width_title, cell_height_menu)
     if from_index == 0:
         pygame.draw.rect(canvas, color_wash, menubuttontext_rect, )
         pygame.draw.rect(canvas, color_border, menubuttontext_rect, 1)
@@ -121,7 +133,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
     table3_start_y = table2b_start_y  # same y for residual book value
     table3_start_x = 1000
     table2c_start_x=800
-    title_dif=30
+    title_dif=40
     
     title01_start_y=table0_start_y-title_dif
     title0a_start_y = table0a_start_y-title_dif# for premium percentage and base book value
@@ -132,19 +144,23 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
     title3_start_x = 1000
     title2c_start_x=800
 
+    bid_flash_x=600
+    bid_flash_y=title1_start_y+20
 
+    won_flash_y=title2b_start_y+30
+    won_flash_x=300
 
 
     cell_width_title = 200
     cell_width_t1 = size_width / (mmax * 4)
-    padding_x = 3
-    padding_y = 3
+    padding_x = 1
+    padding_y = 1
     x=0 # used as an index in the creation of lists
-    title0_text_rect = pygame.Rect(marginx, 0, cell_width_title, cell_height)
+    title0_text_rect = pygame.Rect(marginx, 0, cell_width_title, title_height)
     pygame.draw.rect(canvas, "white", title0_text_rect)
     pygame.draw.rect(canvas, color_border, title0_text_rect, 1)
     canvas.blit(title0_text, title0_text_rect)
-    title1_text_rect = pygame.Rect(marginx, table1_start_y, cell_width_title, cell_height)
+    title1_text_rect = pygame.Rect(marginx, table1_start_y, cell_width_title, title_height)
     table1_start_y = table1_start_y + 1 * cell_height
     pygame.draw.rect(canvas, "white", title1_text_rect)
     pygame.draw.rect(canvas, color_border, title1_text_rect, 1)
@@ -190,6 +206,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
 
     ### create table 0a on initial book value and premium percentage
     for m in range(0, mmax):
+        insurer_premium_base_nested_list[0][m * 3 + 0] = "Underwriter:"
         insurer_premium_base_nested_list[0][m * 3 + 1] = "Initial Book Value"
         insurer_premium_base_nested_list[0][m * 3 + 2] = "Premium %"
         for x in range(0, 3):
@@ -202,7 +219,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                 premium_annual = float(local_data.myalgo_premium)
                 insurer_premium_base_nested_list[1][m * 3 + 2] = premium_annual
 
-        title0a_text_rect = pygame.Rect(marginx, table0a_start_y, cell_width_title, cell_height)
+        title0a_text_rect = pygame.Rect(marginx, table0a_start_y, cell_width_title, title_height)
         cell_width_t0a = cell_width_t1
         subroutines.draw_grid_tjh(canvas, insurer_premium_base_nested_list, cell_width_t0a, cell_height,
                                   padding_x,
@@ -210,30 +227,32 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                                   table0a_start_y, table_start_x, 20, 2, 0)
     ### create table 1
     for m in range(0, mmax):
-        premiums_offered_nested_list[0][m * 4] = local_data.insurer_data[m][0]
+        premiums_offered_nested_list[0][m * 4] = "Underwriter:"
+        premiums_offered_nested_list[0][m * 4+1] = local_data.insurer_data[m][0]
         premiums_offered_nested_list[1][m * 4] = "Ships"
         premiums_offered_nested_list[1][m * 4 + 1] = "Risk Factor"
         premiums_offered_nested_list[1][m * 4 + 2] = "Book factor"
         premiums_offered_nested_list[1][m * 4 + 3] = "Premium"
-        for x in range(1, 4):
-            premiums_offered_nested_list[0][m * 4 + x] = ""
+        for x in range(2, 4):
+            premiums_offered_nested_list[0][m * 4 + x] = "" # blanks in header
 
     subroutines.draw_grid_tjh(canvas, premiums_offered_nested_list, cell_width_t1, cell_height, padding_x, padding_y,
                               table1_start_y, table_start_x, 20, 2, 0)
 
     ### create table 2b
     for m in range(0, mmax):
-        premiums_accepted_nested_list[0][m * 2] = local_data.insurer_data[m][0]
+        premiums_accepted_nested_list[0][m * 2] = "Underwriter"
+        premiums_accepted_nested_list[0][m * 2+1] = local_data.insurer_data[m][0]
         premiums_accepted_nested_list[1][m * 2] = "Ships"
         premiums_accepted_nested_list[1][m * 2 + 1] = "Premium"
 
-        for x in range(1, 2):
-            premiums_accepted_nested_list[0][m * 2 + x] = ""
+        #for x in range(1, 2):
+           # premiums_accepted_nested_list[0][m * 2 + x] = ""
     #title2b_start_y=table2b_start_y
     #title2c_start_y=table2b_start_y
-    title2b_text_rect = pygame.Rect(marginx, table2b_start_y, cell_width_title, cell_height)
-    cell_width_title2c=100
-    title2c_text_rect = pygame.Rect(table2c_start_x, table2c_start_y, cell_width_title2c, cell_height) # narrower title width
+    title2b_text_rect = pygame.Rect(marginx, table2b_start_y, cell_width_title, title_height)
+    cell_width_title2c=120
+    title2c_text_rect = pygame.Rect(table2c_start_x, table2c_start_y, cell_width_title2c, title_height) # narrower title width
     table2b_start_y = table2b_start_y + cell_height
     table2c_start_y=table2b_start_y
     pygame.draw.rect(canvas, "white", title2b_text_rect)
@@ -244,13 +263,13 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
 
     subroutines.draw_grid_with_blanks(canvas, premiums_accepted_nested_list, cell_width_t2, cell_height, padding_x,
                                       padding_y,
-                                      table2b_start_y + cell_height, table_start_x, 20, 2, 0, color_bg="white")
+                                      table2b_start_y + cell_height, table_start_x, 20, 2, 0, color_bg="black")
     
      ### create table 2c for uninsured ships
     uninsured_ships_list=[]
-    uninsured_ships_list.append(" ")
+    uninsured_ships_list.append("")
     uninsured_ships_list.append("Ships")
-    for su in range (2,5):
+    for su in range (2,7):
         uninsured_ships_list.append("")
    
     pygame.draw.rect(canvas, "white", title2c_text_rect)
@@ -262,7 +281,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
     subroutines.draw_one_column_list(canvas, uninsured_ships_list, cell_width_t2c, cell_height,padding_y,table2c_start_y,table2c_start_x,2)
     
     ###create table 3 residual book value
-    title3_text_rect = pygame.Rect(table3_start_x, table3_start_y, cell_width_title, cell_height)
+    title3_text_rect = pygame.Rect(table3_start_x, table3_start_y, cell_width_title, title_height)
     #table3_start_y = table3_start_y + cell_height  # to make room after title
     pygame.draw.rect(canvas, "white", title3_text_rect)
     pygame.draw.rect(canvas, color_border, title3_text_rect, 1)
@@ -334,7 +353,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                                               padding_y, table1_start_y, table_start_x, 20, 2, 0, color_bg="white")
     window.blit(canvas, (0, 0))
     pygame.display.update()
-    #print ("before running")
+    # ("before running - bidding delay",bidding_delay_ms)
     pygame.time.delay(bidding_delay_ms)
     unins_numb=0
     end_of_bidding = False
@@ -350,13 +369,18 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
     accepted_total=0
     while (accepted_total+unins_numb)<smax:
         #print("-----------------------------------------------------------------")
-        #print ("line 305 at start of accepted total<smax - accepted total", accepted_total, "smax",smax)
+        #print ("line 358 at start of accepted total<smax - accepted total", accepted_total, "smax",smax)
         accepted=0
-
+        
         while accepted!=2 or accepted_total<=smax:
             ship_name = premiums_offered_nested_list[s + 2][m * 4]
             premium_offered = premiums_offered_nested_list[s + 2][m * 4 + 3]
             insurer_name=insurers_list[m].insurer_name
+            insurer_name=insurers_list[m].insurer_name
+            #("361 insurer_name", insurer_name)
+            bid_flash_text=font22.render("Underwriter "+insurer_name+" is bidding",True,color_text)
+        
+            subroutines.bid_flash(canvas,bid_flash_text,bid_flash_x,bid_flash_y,alt=0)
             #print("line 311 in accepted!=2 or accepted_total<smax ", "ship_name", ship_name, "m", m,"premium offered", premium_offered,"accepted",accepted,"accepted_total",accepted_total)
             subroutines.draw_grid_with_name_and_insurer(canvas, premiums_offered_nested_list, cell_width_t1, cell_height,
                                                 padding_x,
@@ -364,6 +388,12 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                                                 table1_start_y, table_start_x, 20, 2, 0, ship_name,insurer_name)
             window.blit(canvas, (0, 0))
             pygame.display.update()
+            pygame.time.delay(bidding_delay_ms)
+            subroutines.bid_flash(canvas,bid_flash_text,bid_flash_x,bid_flash_y,alt=1)
+            
+            window.blit(canvas, (0, 0))
+            pygame.display.update()
+
             srepl_list = []
             tries = 0
             pygame.time.delay(bidding_delay_ms)
@@ -399,7 +429,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                 fail_round=False
                 fail_round_accum=0
                 accepted = 0  # to stop double counting
-                print("390 round count",round_count)
+                #print("390 round count",round_count)
                 accepted_total += 1  # to count that all ships have been covered
                 premiums_accepted_nested_list[0 + round_count + 2][m * 2] = ship_name
                 premiums_accepted_nested_list[0 + round_count + 2][m * 2 + 1] = premium_offered
@@ -414,6 +444,8 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                         break
                 for mo in range(0, mmax):
                     insurers_list[mo].insurer_update
+                won_flash_text=font22.render(" Underwriter "+insurer_name+" won "+ ship_name,True, color_text)
+                subroutines.won_flash(canvas,won_flash_text,won_flash_x,won_flash_y,1)
                 #print("369 insurers book value nested list",insurer_book_value_nested_list)
                 subroutines.draw_grid_tjh(canvas, insurer_book_value_nested_list, cell_width_t3, cell_height, padding_x,
                                           padding_y,
@@ -527,7 +559,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                     fail_round=False # reset for next round for same insurer
                 else:
                     fail_round_accum+=1 # accumulates once one entire insurer list has failed
-                    print ("fail round accum",fail_round_accum)
+                    #print ("fail round accum",fail_round_accum)
                     m = m + 1 #move on to next insurer
                     s=0
                     fail_round=False
@@ -536,10 +568,10 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                         round_count += 1
                     insurer_not_list = []
             if fail_round_accum>=3: # test for uninsured ships
-                print ("there are uninsured ships - fail_round_accum",fail_round_accum)
+                #print ("there are uninsured ships - fail_round_accum",fail_round_accum)
                 for sunins in range(0,smmax+1): # because range function stop smmax+1 is exclusive
                     uninsured_ships_list[sunins+2]=(premiums_offered_nested_list[sunins + 2][m * 4])
-                    print ("529 sunins",sunins,"smmax",smmax," uninsured ships list",uninsured_ships_list, "insurer",m )
+                    #print ("574 sunins",sunins,"smmax",smmax," uninsured ships list",uninsured_ships_list, "insurer",m )
                     ship_name_search= uninsured_ships_list[sunins+2]
                     unins_numb=smmax+1
                     
@@ -552,8 +584,8 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
 
                 uninsured_ships_transferred=True
             else:
-                print ("there are no uninsured ships - fail_round_accum",fail_round_accum)
-
+                #print ("there are no uninsured ships - fail_round_accum",fail_round_accum)
+                pass
             for mo in range(0, mmax):
                 insurers_list[mo].insurer_update(mo)
                 insurer_book_value_nested_list[1][mo] = insurers_list[mo].remaining_book_value
@@ -562,7 +594,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                                                 table1_start_y, table_start_x, 20, 2, 0, ship_name)
             subroutines.draw_grid_with_blanks(canvas, premiums_accepted_nested_list, cell_width_t2, cell_height,
                                                   padding_x, padding_y,
-                                                  table2b_start_y, table_start_x, 20, 2, 0, color_bg="white")
+                                                  table2b_start_y, table_start_x, 20, 2, 0, color_bg="black")
             subroutines.draw_grid_tjh(canvas, insurer_book_value_nested_list, cell_width_t3, cell_height, padding_x,
                                           padding_y,
                                           table3_start_y + cell_height, table3_start_x, 20, 2, 0)
@@ -574,7 +606,14 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
             unins_len=len(uninsured_ships_list)
             if (accepted_total+unins_numb) >= smax:
             #if accepted_total>=smax:
-                print ("at end of bidding - uninsured ship transferred", uninsured_ships_transferred)
+                #print ("at end of bidding - uninsured ship transferred", uninsured_ships_transferred)
+                bid_flash_text=font22.render("Bidding has been completed !",True,color_text)
+                subroutines.bid_flash(canvas,bid_flash_text,bid_flash_x,bid_flash_y,alt=1)
+                won_flash_text=font22.render(" There are "+ str(unins_numb) +" ships uninsured",True,color_text)
+                subroutines.won_flash(canvas,won_flash_text,won_flash_x,won_flash_y,alt=1)
+                window.blit(canvas, (0, 0))
+                pygame.display.update()
+                local_data.premiums_set=True
                 end_of_bidding = True
                 break
 

@@ -26,12 +26,13 @@ def main_menu():
     canvas = pygame.Surface((DISPLAY_W, DISPLAY_H))
     pygame.display.set_caption("Edward Lloyd's Coffeehouse")
     #canvas = pygame.display.set_mode((width, height))
+
 ### 3. COLOR DEFITIONS###
 
     color_bg = ('black')
     color_text = ('white')
     color_border = ('blue')
-    color_clickedbcg = ('grey')
+    
     color_wash = "black"
 ### 4. FONT DEFINITIONS ###
     font18 = pygame.font.SysFont("Arial", 18, bold=False)
@@ -99,8 +100,10 @@ def main_menu():
     window.blit(canvas, (0, 0))
     pygame.display.update()
     running = True
-
+    
+    #last_second=1
     while running:
+        #last_second=subroutines.pulser(last_second)
 
         for event in pygame.event.get():
             #print("event type", event.type)
@@ -113,7 +116,7 @@ def main_menu():
 
                     button[i].clicked = True if buttontext_rect[i].collidepoint(event.pos) else False
                     if button[i].clicked == True:
-                        print(i)
+                        pass
 
                 if button[1].clicked:  # Background to this series of game
                     #print("page 1")
