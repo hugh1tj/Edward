@@ -218,11 +218,10 @@ def weather_sub_sub(window,canvas,img2r):
                                     ik].exists = False  # ends smaller of the two weather events by event radius
                                 weather_events_list[ik].ended = True
                                 weather_events_list[ik].reset(ik, mytotal_time_months)
-        ###  displau data
-        #subroutines.insurer_finances_nested_list_sub(window, canvas)
-        #subroutines.ship_list_by_insurer_sub(window, canvas)
+        ###  display data
+       
         textsurf = pygame.Rect(rightpaneltext_x, rightpaneltext_y, rightpaneltext_w, rightpaneltext_h)
-        pygame.draw.rect(canvas, 'white', textsurf)  # blank bacground
+        pygame.draw.rect(canvas, 'white', textsurf)  # blank background
         subroutines.blit_text_rect_tjh(canvas, mytext.mytext6, 'black', textsurf, font22)
         window.blit(canvas, (0, 0))
 

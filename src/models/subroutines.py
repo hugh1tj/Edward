@@ -75,6 +75,7 @@ class Ship():
         self.hull_condition_base = local_data.ship_data[i][6]  # A,E, I O,U from best to worst
         self.rig_condition_base = local_data.ship_data[i][7]  # G, M,B from best to worst
         self.haul = local_data.ship_data[i][8]  # short or long haul
+        self.revenue_direct = local_data.ship_data[i][9]  # indicator of max revenue direction either 1 being max on first leg or 2 max on second leg
         self.hull_condition=self.hull_condition_base
         self.rig_condition=self.rig_condition_base
         # attributes calculated from ship_data
@@ -102,7 +103,7 @@ class Ship():
             self.hull_speed_factor = 0.4
 
         self.ship_speed_pix = 16 * self.rig_speed_factor * self.hull_speed_factor  # pixels per hour (crosses one grid square per ship hour default, one grid square 2 naut miles ie 2 knots
-        self.ship_speed_cond = self.ship_speed_pix / 8  # as kots prgramme resets according to weather conditions
+        self.ship_speed_cond = self.ship_speed_pix / 8  # as knots programme resets according to weather conditions
         ### Attributes inititialised to zero
         self.port_x = 0
         self.port_y = 0
@@ -131,6 +132,7 @@ class Ship():
         self.ship_damage_accum = 0
 
         ### attributes initialised to Booleans
+        ship_wait=False
         self.ship_go = True
         self.ship_infoge = False
         self.ship_infogw = False
@@ -149,13 +151,19 @@ class Ship():
         self.path_back = []
         self.ship_event_x_list = []
         self.ship_event_y_list = []
-        self.damage_event_list = [] # holds a tuple of x,y and text for damamage event display
+        self.damage_event_list = [] # holds a tuple of x,y and text for damage event display
 
 
         ### revenue related attributes
         revenue_mult=local_data.revenue_mult
-        exports = revenue_mult*0.7  # £ per ton for exports
-        imports = revenue_mult*1.75  # £ per ton for imports
+        if self.revenue_direct==2: # eg direction of first leg is into London, London is destination
+       
+            exports = revenue_mult*1.75  # £ per ton for exports e.g. from Jamaica to London
+            imports = revenue_mult*0.7  # £ per ton for imports in to port e.g. Jamaica
+        else:
+            exports = revenue_mult*0.7  # £ per ton for exports e.g from London to Jamaica
+            imports = revenue_mult*1.75  # £ per ton for imports e.g from Jamaica into London
+
         self.revenue_out = self.tons * exports/self.haul
         self.revenue_in = self.tons * imports/self.haul
         self.revenue_accum = 0
@@ -254,7 +262,7 @@ class Ship():
             self.hull_condition) +" "+ str(round(self.ship_speed_cond,1)) + " knots"
         return self.ship_speed_cond
 
-    def get_port(self, j):
+    def get_port(self, j): # creates ports tuple of port and destination and runs astar
         #print('self name', self.ship_name, 'self port', self.port, 'self destination', self.destination)
         port = self.port
         #print ("port",port)
@@ -784,10 +792,6 @@ def finances_sub(window,canvas):
     canvas.blit(finances_text_rend, finances_rect)
 
    
-    
-
-
-
     #### INSURERS TABLE
     padding_x = 2
     padding_y = 0
@@ -840,14 +844,7 @@ def finances_sub(window,canvas):
                               padding_y,
                               insurer_table_y, insurer_table_x, 20, 2, 0)
     
-
-
-
-
     ###SHIPS TABLE
-
-
-
     slist = []
     slist.append(["Ships Listed", "Premium Paid", "Damage/Claims"," Revenue","Balance"])
     slist.append(["by Insurer","","",""])
@@ -924,6 +921,21 @@ def finances_sub(window,canvas):
     ship_win_flash_text_rend=font20g.render(ship_win_flash_text,True,color_bg)
     canvas.blit(ship_win_flash_text_rend, ship_win_flash_rect)
 
+def master_log_sub(window,canvas):
+    master_log_x,master_log_y=10,50
+    master_log_w,master_log_h=1000,790
+   
+    color_bg='black'
+    color_border='blue'
+    color_wash='white'
+    font20g = pygame.font.SysFont("Georgia", 20, bold=False)
+    master_log_rect=pygame.Rect(master_log_x,master_log_y,master_log_w,master_log_h)
+    pygame.draw.rect(canvas,color_wash,master_log_rect)
+    pygame.draw.rect(canvas,color_border,master_log_rect,2)
+
+    
+    blit_text(canvas, local_data.master_log, master_log_rect, color_border)  ### note blit_text uses a list
+    
 
 
 def bid_flash(canvas,bid_flash_text,bid_flash_x,bid_flash_y,alt):
