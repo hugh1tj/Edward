@@ -10,7 +10,7 @@ from decimal import Decimal
 
 def under_prefsub(window,canvas,from_index):
     pygame.init()
-
+    
     ### 3. COLOR DEFINITIONS ###
     color_text = 'black'
     color_border = 'blue'
