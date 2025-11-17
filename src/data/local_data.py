@@ -1,5 +1,6 @@
 mapx=[]
 path_local=[]
+master_log=["Master Log"]
 
 
 
@@ -27,28 +28,34 @@ goinside_button_names = [['Click the Buttons Below', 0],['Chronicle of Ships due
 
 
 ship_data=[
-    ['Albermarle','London','Philadelphia',300,21,'Spanish','A','G',1],
-    ['Albion','London','Jamaica',300,0,'Hull','E','M',1],
-    ['Amelia','London','New York',180,0,'Plantation','A','G',1],
-    ['Ann','London','Quebec',100,2,'Plantation','A','G',1],
-    ['St Ann','London','Jamaica',200,11,'Philadelphia','I','M',1],
-    ['Benevolence','London','Virginia',280,4,'Scarborough','A','M',1],
-    ['Betty','Liverpool','Barbados',120,3,'Plantation','A','G',1],
-    ['Boyd','London','Virginia',150,3,'Plantation','E','M',1],
-    ['Britannia','London','Greenland',370,14,'Dutch','E','M',1],
-    ['Dawkins','London','Jamaica',250,15,'London','E','M',1],
-    ['Diamond','London','Gibraltar',60,0,'Poole','A','G',2],
-    ['Diana','London','Guadeloupe',220,2,'London','A','M',1],
-    ['Diligence','London','Venice',120,0,'London','A','G',2],
-    ['Dispatch','Liverpool','Boston',130,12,'Plantation','O','M',1],
-    ['Dove','London','Naples',250,15,'Plantation','E','M',2],
-    ['Dunbar','London','New York',120,4,'Plantation','E','M',1],# New York via Madeira
-    ['Elizabeth','London','Jamaica',200,6,'Plantation','E','M',1],#via Madeira
-    ['Elliott','Liverpool','Newfoundland',80,8,'London','I','M',1],
-    ['Engrantz','Hull','Stavanger',160,11,'Norway','A','G',2],
-    ['Experiment','London','Senegal',140,0,'America','E','M',1],
-    ['Martin','Liverpool','Angola',180,15,'British','I','M',1]
-    ]# Ship Name, Port of Origin, Destination, tons, age, place of build, hull condition, rig condition, 1=long haul / 2- short haul
+    ['Albermarle','London','Philadelphia',300,21,'Spanish','A','G',1,1],
+    #['Albion','London','Jamaica',300,0,'Hull','E','M',1],
+    ['Albion','Jamaica','London',300,0,'Hull','E','M',1,2],
+    #['Amelia','London','New York',180,0,'Plantation','A','G',1],
+    ['Amelia','New York','London',180,0,'Plantation','A','G',1,1],
+    ['Ann','London','Quebec',100,2,'Plantation','A','G',1,1],
+    ['St Ann','London','Jamaica',200,11,'Philadelphia','I','M',1,1],
+    ['Benevolence','London','Virginia',280,4,'Scarborough','A','M',1,1],
+    #['Betty','Liverpool','Barbados',120,3,'Plantation','A','G',1],
+    ['Betty','Barbados','Liverpool',120,3,'Plantation','A','G',1,2],
+    #['Boyd','London','Virginia',150,3,'Plantation','E','M',1],
+    ['Boyd','Virginia','London',150,3,'Plantation','E','M',1,2],
+    ['Britannia','London','Greenland',370,14,'Dutch','E','M',1,1],
+    ['Dawkins','London','Jamaica',250,15,'London','E','M',1,1],
+    ['Diamond','London','Gibraltar',60,0,'Poole','A','G',2,1],
+    ['Diana','London','Guadeloupe',220,2,'London','A','M',1,1],
+    ['Diligence','London','Venice',120,0,'London','A','G',2,1],
+    #['Dispatch','Liverpool','Boston',130,12,'Plantation','O','M',1],
+    ['Dispatch','Boston','Liverpool',130,12,'Plantation','O','M',1,2],
+    ['Dove','London','Naples',250,15,'Plantation','E','M',2,1],
+    ['Dunbar','London','New York',120,4,'Plantation','E','M',1,1],# New York via Madeira
+    #['Elizabeth','London','Jamaica',200,6,'Plantation','E','M',1],#via Madeira
+    ['Elizabeth','Jamaica','London',200,6,'Plantation','E','M',1,2],#via Madeira
+    ['Elliott','Liverpool','Newfoundland',80,8,'London','I','M',1,1],
+    ['Engrantz','Hull','Stavanger',160,11,'Norway','A','G',2,1],
+    ['Experiment','London','Senegal',140,0,'America','E','M',1,1],
+    ['Martin','Liverpool','Angola',180,15,'British','I','M',1,1]
+    ]# Ship Name, Port of Origin, Destination, tons, age, place of build, hull condition, rig condition, 1=long haul / 2- short haul, max revenue out from port or in
 
 ports_waypoints_coord=[                         # as now picked out by mouse over 1300 x 1000 pixel map
                                                 # third element is whether of not the location is a port (=1) or waypoint(=2) (not used)
@@ -141,6 +148,7 @@ insurers_list=[]
 wind_mag=2 # magnification of wind effect
 revenue_mult=3 # revenue multiplier
 damage_increment=200
+ship_turnaround_time=2 # days in port'
 
 premium_select_labels=["Underwriter","Premium %",5,7.5,10,12.5,15,17.5,20]
 

@@ -15,18 +15,18 @@ def goinside_sub(window, canvas,from_key):
     pygame.init()
     DISPLAY_W, DISPLAY_H = 1500, 1000
     window = pygame.display.set_mode(((DISPLAY_W, DISPLAY_H)))
-    canvas = pygame.Surface((DISPLAY_W, DISPLAY_H))
+    canvas= pygame.Surface((DISPLAY_W, DISPLAY_H))
+    #canvas_general=pygame.Surface((DISPLAY_W, DISPLAY_H))
 
-    # canvas = pygame.display.set_mode((width, height))
+   
     ### 3. COLOR DEFITIONS###
     color_bg = ('black')
     color_text = ('white')
     color_border = ('blue')
-    color_clickedbcg = ('grey')
+  
     color_wash = "black"
     ### 4. FONT DEFINITIONS ###
-    font18 = pygame.font.SysFont("Arial", 18, bold=False)
-    font20 = pygame.font.SysFont("Arial", 20, bold=False)
+   
     font22 = pygame.font.SysFont("Arial", 22, bold=False)
     basic_font = pygame.font.Font('freesansbold.ttf', 32)
     font20g = pygame.font.SysFont("Georgia", 20, bold=False)  ## clear, perhaps a little formal - the font selected
@@ -83,16 +83,10 @@ def goinside_sub(window, canvas,from_key):
         for m in range(0, mmax):
             insurers_list.append(subroutines.Insurer(m))  # instantiates insurer
             local_data.insurers_list.append(insurers_list[m])
-
-
-
     else: # coming from premiums al
          ship_list_me=local_data.ship_list_me
          ship_list_selected = local_data.ship_list_selected
          insurers_list = local_data.insurers_list
-
-
-
 
     ship_nested_list = []
     #############display buttons########################
@@ -121,9 +115,6 @@ def goinside_sub(window, canvas,from_key):
     img2 = pygame.image.load("src/assets/images/Watching Ships Set Sail.png")
     img2r = pygame.transform.scale(img2, (panelimgr_w, panelimgr_h))
     canvas.blit(img2r, (panelimgr_x, panelimgr_y))
-
-
-
 
     textsurf = pygame.Rect(paneltext_x, paneltext_y, paneltext_w, paneltext_h)
     subroutines.blit_text_rect_tjh(canvas, mytext.mytextgoinside, 'white', textsurf, font22)
