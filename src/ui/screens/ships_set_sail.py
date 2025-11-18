@@ -783,7 +783,10 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map):
             #################  KEY SUBROUTINE CALLS  #########################
             pay_premium(i,mytotal_time_years)
             weather_development(canvas_drift,mytotal_time_months,mytotal_time_months_res,mytotal_time_days,mytotal_time_days_res,myinterval_days,weather_events_list)
-           
+            if (hazard==1 or hazard==2 or hazard==4) and weather_state==True: # beached in storm or other weather event
+                beached=True
+            else:
+                beached=False
             #print("660 beach cond,weather_state,hazard", ship_list_selected[i].ship_name,beached,weather_state,hazard)
             ship_x_last= ship_list_selected[i].ship_x_last
             ship_y_last= ship_list_selected[i].ship_y_last
@@ -808,6 +811,7 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map):
                 move_drift_y=0
                 move_wind_x=0
                 move_wind_y=0
+                ship_list_selected[i].weather_disp_x = 0;ship_list_selected[i].weather_disp_y = 0
             #print("812 move sail, x,y",ship_list_selected[i].ship_name,round(move_sail_x,3),round(move_sail_y,3),"drift",round(move_drift_x,3),round(move_drift_y,3),"wind",round(move_wind_x,3),round(move_wind_y,3),"beached",beached)
             ship_x=ship_x+move_sail_x+move_drift_x+move_wind_x           
             ship_y=ship_y+move_sail_y+move_drift_y+move_wind_y
@@ -819,10 +823,7 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map):
             ship_list_selected[i].ship_y_last=ship_y
             hazard=evaluate_hazards(canvas_drift,i,grid,mytotal_time_months,mytotal_time_days_res)
             #print("841 hazard",hazard)
-            if (hazard==1 or hazard==2 or hazard==4) and weather_state==True: # beached in storm or other weather event
-                beached=True
-            else:
-                beached=False
+           
             pygame.draw.circle(canvas_drift, ship_color, (ship_list_selected[i].ship_x, ship_list_selected[i].ship_y),
                                 ship_list_selected[i].marker_radius)
             ###########check if close to next way point move to next way point#####################
