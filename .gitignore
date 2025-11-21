@@ -56,3 +56,13 @@ screenshots/
 # Temporary files
 *.tmp
 *.temp
+
+# Explicitly allow data files in src/assets/data/
+!src/assets/data/*.csv
+!src/assets/data/*.xlsx
+!src/assets/data/*.xls
+!src/assets/data/*.tsj
+!src/assets/data/*.tsx
+!src/assets/data/*.tmj
+!src/assets/data/*.tmx
+!src/assets/data/*.json

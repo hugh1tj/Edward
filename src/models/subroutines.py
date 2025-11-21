@@ -130,6 +130,7 @@ class Ship():
         self.ship_premium_accum=0
         self.ship_premium_counter = 0  # so as to pay only once per year
         self.ship_damage_accum = 0
+        self.ship_current_region = None  # Track current region for ship
 
         ### attributes initialised to Booleans
         ship_wait=False

@@ -9,7 +9,7 @@ from . import ports
 import random
 from ...utils import pathfinding as astar
 from ...utils.spritesheet import Spritesheet
-from ...utils.tiles import *
+from ...utils.tiles import TileMap, TileMap2
 from . import goinside
 import math
 
@@ -222,6 +222,28 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
     drift_drift = pygame.Surface((wc, hc))# for debugging
     drift_drift.fill('white')
 
+    # Initialize regions tilemap (TileMap2) for region lookup
+    # Note: regions_mapping.json will be auto-generated from SeaAreas.xlsx if missing
+    # Initialize early so they're available for ship_display function
+    regions_map = None
+    regions_map_available = False
+    try:
+        regions_map = TileMap2(
+            'src/assets/data/newmapNov2025seareas_Water.csv',
+            'src/assets/data/regions_mapping.json'
+        )
+        # Check if mapping was successfully loaded (not empty)
+        if regions_map.regions_mapping:
+            regions_map_available = True
+        else:
+            regions_map_available = False
+            regions_map = None
+    except Exception as e:
+        print(f"Warning: Could not load regions tilemap: {e}")
+        print("Region tracking will be disabled.")
+        regions_map = None
+        regions_map_available = False
+    
     map_map = TileMap('src/assets/data/newmap6Sep2025.csv', spritesheet)
     grid = local_data.mapx
     # print(' map x ', local_data.mapx)
@@ -377,7 +399,7 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
                     #prepare_routes_button_clicked = True if prepare_routes_text_rect.collidepoint(event.pos) else False
                     if prepare_routes_button_clicked == True:
                         display_select=False
-                        prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,map_map,premiums_set,button,button_names,buttontext_rect,display_drift,selected_ship_number)
+                        prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,map_map,premiums_set,button,button_names,buttontext_rect,display_drift,selected_ship_number,regions_map,regions_map_available)
                     
                     if toggle_drift_map_text_rect.collidepoint(event.pos) == True:
                         if display_drift==True:
@@ -386,7 +408,7 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
                             display_drift = True
                         #print("412 display_drift",display_drift)
 
-def prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,map_map,premiums_set,button,button_names,buttontext_rect,display_drift,selected_ship_number):
+def prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,map_map,premiums_set,button,button_names,buttontext_rect,display_drift,selected_ship_number,regions_map=None,regions_map_available=False):
     ship_list_selected = local_data.ship_list_selected # retrieve mirror  
     smax=local_data.smax
     button_numb = len(local_data.button_names)
@@ -517,7 +539,7 @@ def prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,ma
                
                 if set_sail_button_text_rect.collidepoint(event.pos) == True and premiums_set==True:
                     click_to_sail_wait=False
-                    ship_display(window,canvas,drift_drift, img2r,display_drift,map_map)
+                    ship_display(window,canvas,drift_drift, img2r,display_drift,map_map,regions_map,regions_map_available)
                 elif premiums_set==True:
                     click_to_sail_wait=True
                 else:
@@ -532,10 +554,10 @@ def prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,ma
                     else:
                         display_drift = True
                     
-   #-----------------SHIP DISPLAY-------------------------------------------------------------------------------
+#-----------------SHIP DISPLAY------------------------------------------------------------------
 
 
-def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map):
+def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map,regions_map=None,regions_map_available=False):
    
     ship_list_selected = local_data.ship_list_selected # retrieve mirror
     insurers_list = local_data.insurers_list # retrieve mirror
@@ -788,6 +810,7 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map):
                 beached=True
             else:
                 beached=False
+           
             #print("660 beach cond,weather_state,hazard", ship_list_selected[i].ship_name,beached,weather_state,hazard)
             ship_x_last= ship_list_selected[i].ship_x_last
             ship_y_last= ship_list_selected[i].ship_y_last
@@ -838,6 +861,33 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map):
 
 
             ship_list_selected[i].ship_x = ship_x_last  # Revert to position before move
+            
+            # Check for region changes and log to Master Log
+            if regions_map_available and regions_map:
+                current_region = regions_map.get_region_name(
+                    ship_list_selected[i].ship_x, 
+                    ship_list_selected[i].ship_y
+                )
+                
+                # If region changed, log it
+                if current_region != ship_list_selected[i].ship_current_region:
+                    if current_region is not None:
+                        # Ship entered a new region
+                        append_text = f"entering {current_region}"
+                        append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
+                    elif ship_list_selected[i].ship_current_region is not None:
+                        # Ship left a region (entered unmarked area)
+                        append_text = f"leaving {ship_list_selected[i].ship_current_region}"
+                        append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
+                    
+                    # Update ship's current region
+                    ship_list_selected[i].ship_current_region = current_region
+            
+            #print("841 hazard",hazard)
+            if (hazard==1 or hazard==2 or hazard==4) and weather_state==True: # beached in storm or other weather event
+                beached=True
+            else:
+                beached=False
             pygame.draw.circle(canvas_drift, ship_color, (ship_list_selected[i].ship_x, ship_list_selected[i].ship_y),
                                 ship_list_selected[i].marker_radius)
             ###########check if close to next way point move to next way point#####################
