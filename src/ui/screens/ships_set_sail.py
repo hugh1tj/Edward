@@ -9,7 +9,7 @@ from . import ports
 import random
 from ...utils import pathfinding as astar
 from ...utils.spritesheet import Spritesheet
-from ...utils.tiles import *
+from ...utils.tiles import TileMap, TileMap2
 from . import goinside
 import math
 
@@ -225,6 +225,25 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
     map_map = TileMap('src/assets/data/newmap6Sep2025.csv', spritesheet)
     grid = local_data.mapx
     # print(' map x ', local_data.mapx)
+    
+    # Initialize regions tilemap (TileMap2) for region lookup
+    # Note: regions_mapping.json will be auto-generated from SeaAreas.xlsx if missing
+    try:
+        regions_map = TileMap2(
+            'src/assets/data/newmapNov2025seareas_Water.csv',
+            'src/assets/data/regions_mapping.json'
+        )
+        # Check if mapping was successfully loaded (not empty)
+        if regions_map.regions_mapping:
+            regions_map_available = True
+        else:
+            regions_map_available = False
+            regions_map = None
+    except Exception as e:
+        print(f"Warning: Could not load regions tilemap: {e}")
+        print("Region tracking will be disabled.")
+        regions_map = None
+        regions_map_available = False
     img2 = pygame.image.load('src/assets/images/natlantictrimmedre.png')
     img2r = pygame.transform.scale(img2, (mapwidth, mapheight))  # map of north atlantic larger scale
     canvas.blit(img2r, (margin_x, margin_y))
@@ -783,6 +802,7 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map):
             #################  KEY SUBROUTINE CALLS  #########################
             pay_premium(i,mytotal_time_years)
             weather_development(canvas_drift,mytotal_time_months,mytotal_time_months_res,mytotal_time_days,mytotal_time_days_res,myinterval_days,weather_events_list)
+            hazard=evaluate_hazards(canvas_drift,i,grid,mytotal_time_months,mytotal_time_days_res) # inserted to ensure that hazard is evaluated at current position
             if (hazard==1 or hazard==2 or hazard==4) and weather_state==True: # beached in storm or other weather event
                 beached=True
             else:
@@ -822,8 +842,42 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map):
             ship_list_selected[i].ship_x_last=ship_x
             ship_list_selected[i].ship_y_last=ship_y
             hazard=evaluate_hazards(canvas_drift,i,grid,mytotal_time_months,mytotal_time_days_res)
-            #print("841 hazard",hazard)
-           
+            if (hazard == 1) or (hazard == 2) or (hazard == 4):
+            # Ship hit a barrier - revert to position before the move
+            # This allows damage to be applied but stops the ship from continuing
+                ship_list_selected[i].ship_x = ship_x_last  # Revert to position before move
+                ship_list_selected[i].ship_y = ship_y_last  # Revert to position before move
+                ship_list_selected[i].ship_x_last = ship_x_last  # Keep last position as the safe one
+                ship_list_selected[i].ship_y_last = ship_y_last
+                # Reset weather displacement to prevent continued pushing
+                ship_list_selected[i].weather_disp_x = 0
+                ship_list_selected[i].weather_disp_y = 0
+            
+            # Check for region changes and log to Master Log
+            try:
+                if regions_map_available and regions_map:
+                    current_region = regions_map.get_region_name(
+                        ship_list_selected[i].ship_x, 
+                        ship_list_selected[i].ship_y
+                    )
+                    
+                    # If region changed, log it
+                    if current_region != ship_list_selected[i].ship_current_region:
+                        if current_region is not None:
+                            # Ship entered a new region
+                            append_text = f"entering {current_region}"
+                            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
+                        elif ship_list_selected[i].ship_current_region is not None:
+                            # Ship left a region (entered unmarked area)
+                            append_text = f"leaving {ship_list_selected[i].ship_current_region}"
+                            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
+                        
+                        # Update ship's current region
+                        ship_list_selected[i].ship_current_region = current_region
+            except (NameError, AttributeError):
+                # Regions map not available, skip region tracking
+                pass
+            
             pygame.draw.circle(canvas_drift, ship_color, (ship_list_selected[i].ship_x, ship_list_selected[i].ship_y),
                                 ship_list_selected[i].marker_radius)
             ###########check if close to next way point move to next way point#####################
@@ -1460,7 +1514,7 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
                         ship_list_selected[i].ship_instormw == False) and (
                         ship_list_selected[i].ship_inhurricanee == False) and (
                         ship_list_selected[i].ship_inhurricanew == False) and (
-                        ship_list_selected[i].ship_inicebergs == False)):
+                        ship_list_selected[i].ship_inicebergs == False)): # not affected by any weather events
                         ship_list_selected[i].weather_disp_x = 0
                         ship_list_selected[i].weather_disp_y = 0
                         #print("ship not in weather event weather_disp 0")
