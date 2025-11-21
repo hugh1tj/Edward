@@ -222,12 +222,11 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
     drift_drift = pygame.Surface((wc, hc))# for debugging
     drift_drift.fill('white')
 
-    map_map = TileMap('src/assets/data/newmap6Sep2025.csv', spritesheet)
-    grid = local_data.mapx
-    # print(' map x ', local_data.mapx)
-    
     # Initialize regions tilemap (TileMap2) for region lookup
     # Note: regions_mapping.json will be auto-generated from SeaAreas.xlsx if missing
+    # Initialize early so they're available for ship_display function
+    regions_map = None
+    regions_map_available = False
     try:
         regions_map = TileMap2(
             'src/assets/data/newmapNov2025seareas_Water.csv',
@@ -244,6 +243,10 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
         print("Region tracking will be disabled.")
         regions_map = None
         regions_map_available = False
+    
+    map_map = TileMap('src/assets/data/newmap6Sep2025.csv', spritesheet)
+    grid = local_data.mapx
+    # print(' map x ', local_data.mapx)
     img2 = pygame.image.load('src/assets/images/natlantictrimmedre.png')
     img2r = pygame.transform.scale(img2, (mapwidth, mapheight))  # map of north atlantic larger scale
     canvas.blit(img2r, (margin_x, margin_y))
@@ -536,7 +539,7 @@ def prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,ma
                
                 if set_sail_button_text_rect.collidepoint(event.pos) == True and premiums_set==True:
                     click_to_sail_wait=False
-                    ship_display(window,canvas,drift_drift, img2r,display_drift,map_map)
+                    ship_display(window,canvas,drift_drift, img2r,display_drift,map_map,regions_map,regions_map_available)
                 elif premiums_set==True:
                     click_to_sail_wait=True
                 else:
@@ -554,7 +557,7 @@ def prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,ma
    #-----------------SHIP DISPLAY-------------------------------------------------------------------------------
 
 
-def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map):
+def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map,regions_map=None,regions_map_available=False):
    
     ship_list_selected = local_data.ship_list_selected # retrieve mirror
     insurers_list = local_data.insurers_list # retrieve mirror
@@ -854,29 +857,25 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map):
                 ship_list_selected[i].weather_disp_y = 0
             
             # Check for region changes and log to Master Log
-            try:
-                if regions_map_available and regions_map:
-                    current_region = regions_map.get_region_name(
-                        ship_list_selected[i].ship_x, 
-                        ship_list_selected[i].ship_y
-                    )
+            if regions_map_available and regions_map:
+                current_region = regions_map.get_region_name(
+                    ship_list_selected[i].ship_x, 
+                    ship_list_selected[i].ship_y
+                )
+                
+                # If region changed, log it
+                if current_region != ship_list_selected[i].ship_current_region:
+                    if current_region is not None:
+                        # Ship entered a new region
+                        append_text = f"entering {current_region}"
+                        append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
+                    elif ship_list_selected[i].ship_current_region is not None:
+                        # Ship left a region (entered unmarked area)
+                        append_text = f"leaving {ship_list_selected[i].ship_current_region}"
+                        append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
                     
-                    # If region changed, log it
-                    if current_region != ship_list_selected[i].ship_current_region:
-                        if current_region is not None:
-                            # Ship entered a new region
-                            append_text = f"entering {current_region}"
-                            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
-                        elif ship_list_selected[i].ship_current_region is not None:
-                            # Ship left a region (entered unmarked area)
-                            append_text = f"leaving {ship_list_selected[i].ship_current_region}"
-                            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
-                        
-                        # Update ship's current region
-                        ship_list_selected[i].ship_current_region = current_region
-            except (NameError, AttributeError):
-                # Regions map not available, skip region tracking
-                pass
+                    # Update ship's current region
+                    ship_list_selected[i].ship_current_region = current_region
             
             pygame.draw.circle(canvas_drift, ship_color, (ship_list_selected[i].ship_x, ship_list_selected[i].ship_y),
                                 ship_list_selected[i].marker_radius)
