@@ -856,6 +856,11 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map,regions_
                 # Reset weather displacement to prevent continued pushing
                 ship_list_selected[i].weather_disp_x = 0
                 ship_list_selected[i].weather_disp_y = 0
+
+
+
+
+            ship_list_selected[i].ship_x = ship_x_last  # Revert to position before move
             
             # Check for region changes and log to Master Log
             if regions_map_available and regions_map:
