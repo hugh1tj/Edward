@@ -399,7 +399,7 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
                     #prepare_routes_button_clicked = True if prepare_routes_text_rect.collidepoint(event.pos) else False
                     if prepare_routes_button_clicked == True:
                         display_select=False
-                        prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,map_map,premiums_set,button,button_names,buttontext_rect,display_drift,selected_ship_number)
+                        prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,map_map,premiums_set,button,button_names,buttontext_rect,display_drift,selected_ship_number,regions_map,regions_map_available)
                     
                     if toggle_drift_map_text_rect.collidepoint(event.pos) == True:
                         if display_drift==True:
@@ -408,7 +408,7 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
                             display_drift = True
                         #print("412 display_drift",display_drift)
 
-def prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,map_map,premiums_set,button,button_names,buttontext_rect,display_drift,selected_ship_number):
+def prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,map_map,premiums_set,button,button_names,buttontext_rect,display_drift,selected_ship_number,regions_map=None,regions_map_available=False):
     ship_list_selected = local_data.ship_list_selected # retrieve mirror  
     smax=local_data.smax
     button_numb = len(local_data.button_names)
