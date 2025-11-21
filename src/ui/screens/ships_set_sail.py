@@ -783,6 +783,7 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map):
             #################  KEY SUBROUTINE CALLS  #########################
             pay_premium(i,mytotal_time_years)
             weather_development(canvas_drift,mytotal_time_months,mytotal_time_months_res,mytotal_time_days,mytotal_time_days_res,myinterval_days,weather_events_list)
+            hazard=evaluate_hazards(canvas_drift,i,grid,mytotal_time_months,mytotal_time_days_res) # inserted to ensure that hazard is evaluated at current position
             if (hazard==1 or hazard==2 or hazard==4) and weather_state==True: # beached in storm or other weather event
                 beached=True
             else:
@@ -822,8 +823,21 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map):
             ship_list_selected[i].ship_x_last=ship_x
             ship_list_selected[i].ship_y_last=ship_y
             hazard=evaluate_hazards(canvas_drift,i,grid,mytotal_time_months,mytotal_time_days_res)
-            #print("841 hazard",hazard)
-           
+            if (hazard == 1) or (hazard == 2) or (hazard == 4):
+            # Ship hit a barrier - revert to position before the move
+            # This allows damage to be applied but stops the ship from continuing
+                ship_list_selected[i].ship_x = ship_x_last  # Revert to position before move
+                ship_list_selected[i].ship_y = ship_y_last  # Revert to position before move
+                ship_list_selected[i].ship_x_last = ship_x_last  # Keep last position as the safe one
+                ship_list_selected[i].ship_y_last = ship_y_last
+                # Reset weather displacement to prevent continued pushing
+                ship_list_selected[i].weather_disp_x = 0
+                ship_list_selected[i].weather_disp_y = 0
+
+
+
+
+            ship_list_selected[i].ship_x = ship_x_last  # Revert to position before move
             pygame.draw.circle(canvas_drift, ship_color, (ship_list_selected[i].ship_x, ship_list_selected[i].ship_y),
                                 ship_list_selected[i].marker_radius)
             ###########check if close to next way point move to next way point#####################
@@ -1460,7 +1474,7 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
                         ship_list_selected[i].ship_instormw == False) and (
                         ship_list_selected[i].ship_inhurricanee == False) and (
                         ship_list_selected[i].ship_inhurricanew == False) and (
-                        ship_list_selected[i].ship_inicebergs == False)):
+                        ship_list_selected[i].ship_inicebergs == False)): # not affected by any weather events
                         ship_list_selected[i].weather_disp_x = 0
                         ship_list_selected[i].weather_disp_y = 0
                         #print("ship not in weather event weather_disp 0")
