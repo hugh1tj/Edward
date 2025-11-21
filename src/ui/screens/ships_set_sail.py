@@ -540,7 +540,6 @@ def prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,ma
                 if set_sail_button_text_rect.collidepoint(event.pos) == True and premiums_set==True:
                     click_to_sail_wait=False
                     ship_display(window,canvas,drift_drift, img2r,display_drift,map_map,regions_map,regions_map_available)
-                    ship_display(window,canvas,drift_drift, img2r,display_drift,map_map)
                 elif premiums_set==True:
                     click_to_sail_wait=True
                 else:
@@ -555,11 +554,10 @@ def prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,ma
                     else:
                         display_drift = True
                     
-   #-----------------SHIP DISPLAY-------------------------------------------------------------------------------
+#-----------------SHIP DISPLAY------------------------------------------------------------------
 
 
 def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map,regions_map=None,regions_map_available=False):
-def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map):
    
     ship_list_selected = local_data.ship_list_selected # retrieve mirror
     insurers_list = local_data.insurers_list # retrieve mirror
