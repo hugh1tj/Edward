@@ -3,6 +3,19 @@ from ..data import local_data
 import pygame, csv, os
 import json
 
+# Try to import Excel reading libraries (optional dependencies)
+try:
+    import openpyxl
+    HAS_OPENPYXL = True
+except ImportError:
+    HAS_OPENPYXL = False
+
+try:
+    import pandas as pd
+    HAS_PANDAS = True
+except ImportError:
+    HAS_PANDAS = False
+
 class Tile(pygame.sprite.Sprite):
     def __init__(self, image, x, y, spritesheet):
         pygame.sprite.Sprite.__init__(self)
@@ -156,6 +169,230 @@ class Spritesheet:
         x, y, w, h = sprite["x"], sprite["y"], sprite["w"], sprite["h"]
         image = self.get_sprite(x, y, w, h)
         return image
+
+
+def auto_generate_regions_mapping(excel_path, output_path):
+    """
+    Auto-generate regions_mapping.json from Excel file if it doesn't exist.
+    This function is called automatically by TileMap2 if the mapping file is missing.
+    
+    Args:
+        excel_path: Path to SeaAreas.xlsx
+        output_path: Path where regions_mapping.json should be created
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    if not os.path.exists(excel_path):
+        return False
+    
+    def read_excel_openpyxl(filepath):
+        """Read Excel file using openpyxl."""
+        wb = openpyxl.load_workbook(filepath, data_only=True)
+        ws = wb.active  # Get first worksheet
+        
+        mapping = {}
+        # Assume first row is header, data starts from row 2
+        # Expected format: Column A = Tile ID, Column B = Region Name
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            if row[0] is not None and row[1] is not None:
+                tile_id = str(int(row[0])) if isinstance(row[0], (int, float)) else str(row[0])
+                region_name = str(row[1]).strip()
+                if tile_id and region_name:
+                    mapping[tile_id] = region_name
+        return mapping
+    
+    def read_excel_pandas(filepath):
+        """Read Excel file using pandas."""
+        df = pd.read_excel(filepath)
+        mapping = {}
+        
+        # If columns are unnamed, use indices
+        if df.columns[0] == 0 or 'Tile ID' in str(df.columns[0]):
+            id_col = df.columns[0]
+            name_col = df.columns[1]
+        else:
+            # Try to find columns by name
+            id_col = 'Tile ID' if 'Tile ID' in df.columns else df.columns[0]
+            name_col = 'Region Name' if 'Region Name' in df.columns else df.columns[1]
+        
+        for _, row in df.iterrows():
+            tile_id = str(int(row[id_col])) if pd.notna(row[id_col]) else None
+            region_name = str(row[name_col]).strip() if pd.notna(row[name_col]) else None
+            if tile_id and region_name:
+                mapping[tile_id] = region_name
+        return mapping
+    
+    # Try openpyxl first, then pandas
+    mapping = None
+    if HAS_OPENPYXL:
+        try:
+            mapping = read_excel_openpyxl(excel_path)
+        except Exception:
+            mapping = None
+    
+    if mapping is None and HAS_PANDAS:
+        try:
+            mapping = read_excel_pandas(excel_path)
+        except Exception:
+            mapping = None
+    
+    if mapping is None:
+        return False
+    
+    # Write JSON file
+    output_dir = os.path.dirname(output_path)
+    if output_dir and not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    try:
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(mapping, f, indent=2, ensure_ascii=False)
+        return True
+    except Exception:
+        return False
+
+
+class TileMap2():
+    """
+    Second tilemap for regions lookup.
+    Loads regions CSV and mapping JSON to provide region name lookups.
+    """
+    def __init__(self, csv_filename, mapping_json_filename, spritesheet=None):
+        """
+        Initialize regions tilemap.
+        
+        Args:
+            csv_filename: Path to regions CSV file (e.g., newmapNov2025seareas_Water.csv)
+            mapping_json_filename: Path to regions_mapping.json
+            spritesheet: Optional spritesheet for rendering (not required for lookup only)
+        """
+        self.tile_size = 16
+        self.spritesheet = spritesheet
+        self.map_data = self.read_csv(csv_filename)
+        self.regions_mapping = self.load_mapping(mapping_json_filename)
+        
+        # Calculate map dimensions
+        if self.map_data:
+            self.map_h = len(self.map_data)
+            self.map_w = len(self.map_data[0]) if self.map_data[0] else 0
+        else:
+            self.map_w, self.map_h = 0, 0
+    
+    def read_csv(self, filename):
+        """Read CSV file and return as list of lists."""
+        map_data = []
+        try:
+            with open(os.path.join(filename)) as data:
+                reader = csv.reader(data, delimiter=',')
+                for row in reader:
+                    map_data.append(list(row))
+        except FileNotFoundError:
+            print(f"Warning: CSV file not found: {filename}")
+        except Exception as e:
+            print(f"Error reading CSV file {filename}: {e}")
+        return map_data
+    
+    def load_mapping(self, mapping_json_filename):
+        """Load regions mapping from JSON file. Auto-generates if missing."""
+        mapping = {}
+        # Use the filename as-is (it's already a path)
+        mapping_path = mapping_json_filename
+        
+        # If mapping file doesn't exist, try to auto-generate it
+        if not os.path.exists(mapping_path):
+            # Try to find the Excel file in the same directory
+            mapping_dir = os.path.dirname(mapping_path)
+            excel_path = os.path.join(mapping_dir, "SeaAreas.xlsx")
+            
+            if os.path.exists(excel_path):
+                print(f"regions_mapping.json not found. Auto-generating from {excel_path}...")
+                if auto_generate_regions_mapping(excel_path, mapping_path):
+                    print(f"Successfully auto-generated {mapping_path}")
+                else:
+                    print(f"Warning: Could not auto-generate mapping file. Region tracking disabled.")
+                    return mapping
+            else:
+                print(f"Warning: Mapping JSON file not found: {mapping_json_filename}")
+                print(f"  Excel file also not found at: {excel_path}")
+                print(f"  Region tracking will be disabled.")
+                return mapping
+        
+        # Load the mapping file
+        try:
+            with open(mapping_path, 'r', encoding='utf-8') as f:
+                mapping = json.load(f)
+        except Exception as e:
+            print(f"Error reading mapping JSON {mapping_json_filename}: {e}")
+        return mapping
+    
+    def get_region_name(self, x, y):
+        """
+        Get region name at pixel coordinates (x, y).
+        
+        Args:
+            x: X coordinate in pixels
+            y: Y coordinate in pixels
+            
+        Returns:
+            Region name string, or None if not found or no region at that location
+        """
+        if not self.map_data or not self.regions_mapping:
+            return None
+        
+        # Convert pixel coordinates to tile coordinates
+        tile_x = int(x // self.tile_size)
+        tile_y = int(y // self.tile_size)
+        
+        # Check bounds
+        if tile_y < 0 or tile_y >= len(self.map_data):
+            return None
+        if tile_x < 0 or tile_x >= len(self.map_data[tile_y]):
+            return None
+        
+        # Get tile ID from CSV
+        tile_id_str = str(self.map_data[tile_y][tile_x]).strip()
+        
+        # Handle -1 (empty/no region) and 0
+        if tile_id_str == '-1' or tile_id_str == '0' or not tile_id_str:
+            return None
+        
+        # Look up region name in mapping
+        region_name = self.regions_mapping.get(tile_id_str)
+        
+        return region_name
+    
+    def get_region_name_from_tile(self, tile_x, tile_y):
+        """
+        Get region name at tile coordinates (tile_x, tile_y).
+        
+        Args:
+            tile_x: X coordinate in tiles (not pixels)
+            tile_y: Y coordinate in tiles (not pixels)
+            
+        Returns:
+            Region name string, or None if not found
+        """
+        if not self.map_data or not self.regions_mapping:
+            return None
+        
+        # Check bounds
+        if tile_y < 0 or tile_y >= len(self.map_data):
+            return None
+        if tile_x < 0 or tile_x >= len(self.map_data[tile_y]):
+            return None
+        
+        # Get tile ID from CSV
+        tile_id_str = str(self.map_data[tile_y][tile_x]).strip()
+        
+        # Handle -1 (empty/no region) and 0
+        if tile_id_str == '-1' or tile_id_str == '0' or not tile_id_str:
+            return None
+        
+        # Look up region name in mapping
+        region_name = self.regions_mapping.get(tile_id_str)
+        
+        return region_name
 
 
 
