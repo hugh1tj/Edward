@@ -83,27 +83,7 @@ class Ship():
             self.place_of_build_preference = 1
         else:
             self.place_of_build_preference = 0
-        self.hull_speed_factor = 1
-        self.rig_speed_factor = 1
-        if self.rig_condition == "G":  # G,M,B
-            self.rig_speed_factor = 1
-        elif self.rig_condition == "M":
-            self.rig_speed_factor = 0.7
-        else:
-            self.rig_speed_factor = 0.5
-        if self.hull_condition == "A":
-            self.hull_speed_factor = 1
-        elif self.hull_condition == "E":
-            self.hull_speed_factor = 0.8
-        elif self.hull_condition == "I":
-            self.hull_speed_factor = 0.6
-        elif self.hull_condition == "O":
-            self.hull_speed_factor = 0.5
-        else:
-            self.hull_speed_factor = 0.4
-
-        self.ship_speed_pix = 16 * self.rig_speed_factor * self.hull_speed_factor  # pixels per hour (crosses one grid square per ship hour default, one grid square 2 naut miles ie 2 knots
-        self.ship_speed_cond = self.ship_speed_pix / 8  # as knots programme resets according to weather conditions
+      
         ### Attributes inititialised to zero
         self.port_x = 0
         self.port_y = 0
@@ -178,48 +158,27 @@ class Ship():
         self.marker_radius = 5
         self.ship_insurer = ""
         self.ship_event_y_list = []
+        
         if self.ship_premium==0:
 
             self.ship_log = ["Ship Log Details for ship " + self.ship_name,
-                         "for other ships click on ship name buttons - top right", "This ship " + "has not been insured. " ,"Leaving Port Rig Condition:"+str(self.rig_condition_base)+ " Hull Condition:"+str(self.hull_condition_base)+" "+str(round(self.ship_speed_cond,1))+" knots"]
+                         "for other ships click on ship name buttons - top right", "This ship " + "has not been insured. " ,"Leaving Port Rig Condition:"+str(self.rig_condition_base)+ " Hull Condition:"+str(self.hull_condition_base)]
         else:
             
             self.ship_log = ["Ship Log Details for ship " + self.ship_name,
                          "for other ships click on ship name buttons - top right", "This ship " + "is insured by " + str(
-                self.ship_insurer) + " at a premium of £" + str(self.ship_premium),"Leaving Port Rig Condition:"+str(self.rig_condition_base)+ " Hull Condition:"+str(self.hull_condition_base)+" "+str(round(self.ship_speed_cond,1))+" knots"]
+                self.ship_insurer) + " at a premium of £" + str(self.ship_premium),"Leaving Port Rig Condition:"+str(self.rig_condition_base)+ " Hull Condition:"+str(self.hull_condition_base)]
         
         return
     
+    
 
-
-
-    def ship_speed_reset(self, j):
-        if self.rig_condition == "A":  # G,M,B
-            self.rig_speed_factor = 1
-        elif self.rig_condition == "M":
-            self.rig_speed_factor = 0.7
-        else:
-            self.rig_speed_factor = 0.5
-        if self.hull_condition == "A":
-            self.hull_speed_factor = 1
-        elif self.hull_condition == "E":
-            self.hull_speed_factor = 0.8
-        elif self.hull_condition == "I":
-            self.hull_speed_factor = 0.6
-        elif self.hull_condition == "O":
-            self.hull_speed_factor = 0.5
-        else:
-            self.hull_speed_factor = 0.4
-        self.base_speed = 2  # 2 knots
-        self.ship_speed_pix = self.base_speed * 8 * self.rig_speed_factor * self.hull_speed_factor  # pixels per hour (crosses one grid square per ship hour default, one grid square 2 naut miles ie 2 knots
-        self.ship_speed_cond = self.ship_speed_pix / 8  # as knots prgramme resets according to weather conditions
-        return self.ship_speed_cond
 
 
     def ship_log_update(self, i):
         self.ship_log[0]="Ship Log Details for ship " + self.ship_name
         self.ship_log[1]=  "for other ships click on ship name buttons - top right"
-        
+        ship_speed_cond=ship_speed_calculate(self.rig_condition,self.hull_condition)
         if self.ship_premium==0:
             #self.ship_log[2]="X" # for debugging
             self.ship_log[2] =" This ship has not been insured. "
@@ -228,7 +187,7 @@ class Ship():
             #self.ship_log[2]="Y" # for debugging
             self.ship_log[2] = "This ship is insured by " + str(self.ship_insurer)  + " at a premium of £" + str(self.ship_premium)
         
-        self.ship_log[3]="Leaving Port Rig Condition:"+str(self.rig_condition_base)+ " Hull Condition:"+str(self.hull_condition_base)+" "+str(round(self.ship_speed_cond,1))+" knots"
+        self.ship_log[3]="Leaving Port Rig Condition:"+str(self.rig_condition_base)+ " Hull Condition:"+str(self.hull_condition_base)+" "+str(round(ship_speed_cond,1))+" knots"
         
         return
 
@@ -241,27 +200,12 @@ class Ship():
         # print ("Ship Repair")
         self.hull_condition = local_data.ship_data[i][6]  # A,E, I O,U from best to worst
         self.rig_condition = local_data.ship_data[i][7]  # G, M,B from best to worst
-        self.ship_speed_pix = 16 * self.rig_speed_factor * self.hull_speed_factor  # pixels per hour (crosses one grid square per ship hour default, one grid square 2 naut miles ie 2 knots
-        self.ship_speed_cond = self.ship_speed_pix / 8  # as kots prgramme resets according to weather conditions
-        if self.rig_condition == "A":  # G,M,B
-            self.rig_speed_factor = 1
-        elif self.rig_condition == "M":
-            self.rig_speed_factor = 0.7
-        else:
-            self.rig_speed_factor = 0.5
-        if self.hull_condition == "A":
-            self.hull_speed_factor = 1
-        elif self.hull_condition == "E":
-            self.hull_speed_factor = 0.8
-        elif self.hull_condition == "I":
-            self.hull_speed_factor = 0.6
-        elif self.hull_condition == "O":
-            self.hull_speed_factor = 0.5
-        else:
-            self.hull_speed_factor = 0.4
+        #self.ship_speed_pix = 16 * self.rig_speed_factor * self.hull_speed_factor  # pixels per hour (crosses one grid square per ship hour default, one grid square 2 naut miles ie 2 knots
+        #self.ship_speed_cond = self.ship_speed_pix / 8  # as kots prgramme resets according to weather conditions
+        ship_speed_cond=ship_speed_calculate(self.rig_condition,self.hull_condition)
         self.ship_log[3] = "Leaving Port after repair Rig Condition:" + str(self.rig_condition) + " Hull Condition:" + str(
-            self.hull_condition) +" "+ str(round(self.ship_speed_cond,1)) + " knots"
-        return self.ship_speed_cond
+            self.hull_condition) +" "+ str(round(ship_speed_cond,1)) + " knots"
+        return ship_speed_cond
 
     def get_port(self, j): # creates ports tuple of port and destination and runs astar
         #print('self name', self.ship_name, 'self port', self.port, 'self destination', self.destination)
@@ -307,6 +251,33 @@ class Ship():
                 self.path_back = local_data.path_local
             #print(' path go ', self.path_go)
             #print ('path back ', self.path_back)
+
+def ship_speed_calculate(rig_condition, hull_condition):
+        if rig_condition == "G":  # G,M,B
+            rig_speed_factor = 1
+        elif rig_condition == "M":
+            rig_speed_factor = 0.7
+        else: # B
+            rig_speed_factor = 0.5
+        if hull_condition == "A":
+            hull_speed_factor = 1
+        elif hull_condition == "E":
+            hull_speed_factor = 0.8
+        elif hull_condition == "I":
+            hull_speed_factor = 0.6
+        elif hull_condition == "O":
+            hull_speed_factor = 0.5
+        else: # U
+            hull_speed_factor = 0.4
+        base_speed = local_data.base_speed # 2 knots
+        ship_speed_pix = base_speed * 8 * rig_speed_factor * hull_speed_factor  # pixels per hour (crosses one grid square per ship hour default, one grid square 2 naut miles ie 2 knots
+        ship_speed_cond = ship_speed_pix / 8  # as knots programme; resets according to weather conditions
+       
+        return (ship_speed_cond)
+
+
+
+
 class Weather_event():
 
     def __init__(self, i):

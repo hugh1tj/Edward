@@ -1014,7 +1014,8 @@ def ship_move_sail(i,myinterval_days,wp_next_x,wp_next_y):
                 distortion_factor = 1.6
             else:
                 distortion_factor = 1
-            speed_interval=fudge*myinterval_days * 24 * ship_list_selected[i].ship_speed_cond/distortion_factor
+            ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition)
+            speed_interval=fudge*myinterval_days * 24 * ship_speed_cond/distortion_factor
             v3_move=v3*speed_interval/v3_magnitude
             #print("1030 speed_interval",speed_interval,"v3 magnitude",v3_magnitude)
             #print ("1021 vectors 1,2,3,v3_move",v1,v2,v3,v3_move)
@@ -1400,7 +1401,8 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
                         #append_text = "rig condition " + ship_list_selected[i].rig_condition + " hull condition " + ship_list_selected[i].hull_condition + " "+str(
                         #round(ship_list_selected[i].ship_speed_cond, 1)) + " knots "
                         #append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
-                        append_text = 'encounters Fog - ship speed ' + str(round(ship_list_selected[i].ship_speed_cond, 1)) + " knots "
+                        ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition) 
+                        append_text = 'encounters Fog - ship speed ' + str(round(ship_speed_cond, 1)) + " knots "
                         #print(append_text)
                         append_if(i, append_text,mytotal_time_months,mytotal_time_days_res,time_stamp=True)
                         damage_text="Fog"
@@ -1422,7 +1424,7 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
                             append_text = "encounters Storms"
                             append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
 
-                            ship_list_selected[i].ship_speed_cond = 0.5 * ship_list_selected[i].ship_speed_pix / 8
+                            ship_list_selected[i].ship_speed_cond = 0.5 * subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition) # 0.5 is a hard coded speed reduction for storms
                             ship_list_selected[i].marker_radius = 10
                             ship_list_selected[i].weather_disp_x = -wind_mag*weather_disp_fract * myinterval_days * (
                             wind_speed * 24 * math.sin(angle_to_event * math.pi / 180)) * (
@@ -1451,7 +1453,8 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
                             append_text = "encounters Hurricane"
                             append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
 
-                            ship_list_selected[i].ship_speed_cond = 0.4 * ship_list_selected[i].ship_speed_pix / 8
+                            #ship_list_selected[i].ship_speed_cond = 0.4 * ship_list_selected[i].ship_speed_pix / 8
+                            ship_list_selected[i].ship_speed_cond = 0.4 *subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition) # 0.4 is a hard coded speed reduction for hurricanes
                             ship_list_selected[i].marker_radius = 10
                             ship_list_selected[i].weather_disp_x = -wind_mag*weather_disp_fract * myinterval_days * (
                             wind_speed * 24 * math.sin(angle_to_event * math.pi / 180)) * (
@@ -1477,7 +1480,8 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
                             append_text = "encounters Icebergs - ship speed" +str(round(ship_list_selected[i].ship_speed_cond, 1)) + " knots "
                 
                             append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
-                            ship_list_selected[i].ship_speed_cond = 0.3 * ship_list_selected[i].ship_speed_pix / 8
+                            #ship_list_selected[i].ship_speed_cond = 0.3 * ship_list_selected[i].ship_speed_pix / 8
+                            ship_list_selected[i].ship_speed_cond = 0.3 * subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition) # 0.3 is a hard coded speed reduction for icebergs
                             ship_list_selected[i].ship_inicebergs = False
                             ship_list_selected[i].marker_radius = 10
                             ship_list_selected[i].weather_disp_x = 0
@@ -1525,11 +1529,13 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
                         ship_list_selected[i].ship_inhurricanee == False) and (
                         ship_list_selected[i].ship_inhurricanew == False) and (
                         ship_list_selected[i].ship_inicebergs == False)): # not affected by any weather events
-                        ship_list_selected[i].weather_disp_x = 0
-                        ship_list_selected[i].weather_disp_y = 0
+                        
+                        #ship_list_selected[i].weather_disp_x = 0
+                        #ship_list_selected[i].weather_disp_y = 0
                         #print("ship not in weather event weather_disp 0")
-                    else:
-                        ship_list_selected[i].ship_speed_reset(i)
+                    #else:
+                        #ship_list_selected[i].ship_speed_reset(i)
+                        ship_list_selected[i].ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition)
                         #print("speed reset",ship_list_selected[i].ship_name,ship_list_selected[i].ship_speed_cond,ship_list_selected[i].ship_speed_pix)
                         ship_list_selected[i].marker_radius = 5
 
@@ -1616,12 +1622,13 @@ def evaluate_hazards(canvas,i,grid,mytotal_time_months,mytotal_time_days_res):
                     ship_list_selected[i].ship_damage_accum = ship_list_selected[
                                                             i].ship_damage_accum + beaching_damage_increment
                     degrade_condition(i, ship_list_selected, ship_condition)
-                    ship_list_selected[i].ship_speed_reset(i)  # to modify speed in accordance with new ship condition
-
+                    #ship_list_selected[i].ship_speed_reset(i)  # to modify speed in accordance with new ship condition
+                    ship_list_selected[i].ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition)
             if hazard_sq == 2:
                 hazard_text="rocks"
                 ship_condition = "Hull"
                 rocks_damage_increment = 100
+                ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition)
                 append_text = (
                             "ship damaged at " + str(10 * round(ship_list_selected[i].ship_x / 10)) + ":" + str(
                         10 * round(ship_list_selected[
@@ -1629,7 +1636,7 @@ def evaluate_hazards(canvas,i,grid,mytotal_time_months,mytotal_time_days_res):
                 appendx=append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=False)
                 append_text = "rig condition " + ship_list_selected[i].rig_condition + " hull condition " + \
                             ship_list_selected[i].hull_condition + " knots " + str(
-                    round(ship_list_selected[i].ship_speed_cond, 1))
+                    round(ship_speed_cond, 1))
                 appendy = append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,
                                     time_stamp=False)
 
@@ -1638,7 +1645,8 @@ def evaluate_hazards(canvas,i,grid,mytotal_time_months,mytotal_time_days_res):
                     ship_list_selected[i].ship_damage_accum = ship_list_selected[
                                                                 i].ship_damage_accum + rocks_damage_increment
 
-                    ship_list_selected[i].ship_speed_reset(i)  # to modify speed in accordance with new ship condition
+                    #ship_list_selected[i].ship_speed_reset(i)  # to modify speed in accordance with new ship condition
+                    ship_list_selected[i].ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition)
         if hazard_sq == 4:
                 hazard_text="land"
                 ship_condition = "Hull"
@@ -1658,8 +1666,8 @@ def evaluate_hazards(canvas,i,grid,mytotal_time_months,mytotal_time_days_res):
                     ship_list_selected[i].ship_damage_accum = ship_list_selected[
                                                                 i].ship_damage_accum + rocks_damage_increment
                     degrade_condition(i, ship_list_selected, ship_condition)
-                    ship_list_selected[i].ship_speed_reset(
-                        i)  # to modify speed in accordance with new ship condition
+                    #ship_list_selected[i].ship_speed_reset(i)  # to modify speed in accordance with new ship condition
+                    ship_list_selected[i].ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected.hull_condition)
                 #print("hazard damage", ship_list_selected[i].ship_name, ship_list_selected[i].ship_damage_accum)
     return( hazard_sq)
 

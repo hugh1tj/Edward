@@ -163,3 +163,5 @@ weather_severity_headers=[""," Hurricanes", " Storms", " Fog"," Icebergs"]
 weather_severity_default=["", " Low"," Moderate"," Moderate"," Moderate"]
 weather_severities_chosen=[] # for use in settings where chosen is inserted and in ship_set_sail where it is used (4 items)
 weather_duration_adjust=[0.5,1.5] # fractions with which duration and max wind speed are adjusted for Low and Severe weather severities
+
+base_speed=2 # knots
