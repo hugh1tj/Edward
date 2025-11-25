@@ -247,28 +247,31 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
     drift_drift.fill('white')
 
     # Initialize regions tilemap (TileMap2) for region lookup
-    # Note: regions_mapping.json will be auto-generated from SeaAreas.xlsx if missing
+    # Note: regions_mapping.json will be auto-generated from SeaAreas.xlsx if missing or empty
     # Initialize early so they're available for ship_display function
     regions_map = None
     regions_map_available = False
     try:
+        print("Initializing regions tilemap...")
         regions_map = TileMap2(
             'src/assets/data/newmapNov2025seareas_Water.csv',
             'src/assets/data/regions_mapping.json'
         )
-        print("236 regions map try",regions_map)
         # Check if mapping was successfully loaded (not empty)
-        if regions_map.regions_mapping:
+        if regions_map.regions_mapping and len(regions_map.regions_mapping) > 0:
             regions_map_available = True
+            print(f"Region tracking enabled: {len(regions_map.regions_mapping)} regions loaded")
         else:
             regions_map_available = False
             regions_map = None
+            print("Warning: Region tracking disabled - mapping is empty or invalid")
     except Exception as e:
-        print(f"Warning: Could not load regions tilemap: {e}")
+        print(f"ERROR: Could not load regions tilemap: {e}")
+        import traceback
+        traceback.print_exc()
         print("Region tracking will be disabled.")
         regions_map = None
         regions_map_available = False
-    print("247 regions_map_available",regions_map_available)
     
     map_map = TileMap('src/assets/data/newmap6Sep2025.csv', spritesheet)
     grid = local_data.mapx

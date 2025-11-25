@@ -228,16 +228,28 @@ def auto_generate_regions_mapping(excel_path, output_path):
     if HAS_OPENPYXL:
         try:
             mapping = read_excel_openpyxl(excel_path)
-        except Exception:
+            if mapping:
+                print(f"  Successfully read {len(mapping)} mappings using openpyxl")
+        except Exception as e:
+            print(f"  Error reading Excel with openpyxl: {e}")
             mapping = None
     
     if mapping is None and HAS_PANDAS:
         try:
             mapping = read_excel_pandas(excel_path)
-        except Exception:
+            if mapping:
+                print(f"  Successfully read {len(mapping)} mappings using pandas")
+        except Exception as e:
+            print(f"  Error reading Excel with pandas: {e}")
             mapping = None
     
-    if mapping is None:
+    if mapping is None or len(mapping) == 0:
+        if not HAS_OPENPYXL and not HAS_PANDAS:
+            print(f"  ERROR: Neither openpyxl nor pandas is installed!")
+            print(f"  Please install one: python -m pip install openpyxl")
+        else:
+            print(f"  ERROR: Could not read any mappings from Excel file")
+            print(f"  Check that SeaAreas.xlsx has data in columns A (Tile ID) and B (Region Name)")
         return False
     
     # Write JSON file
@@ -287,43 +299,81 @@ class TileMap2():
                 reader = csv.reader(data, delimiter=',')
                 for row in reader:
                     map_data.append(list(row))
+            if map_data:
+                print(f"Loaded regions CSV: {len(map_data)} rows, {len(map_data[0]) if map_data[0] else 0} columns")
+            else:
+                print(f"Warning: CSV file {filename} is empty")
         except FileNotFoundError:
-            print(f"Warning: CSV file not found: {filename}")
+            print(f"ERROR: CSV file not found: {filename}")
         except Exception as e:
-            print(f"Error reading CSV file {filename}: {e}")
+            print(f"ERROR reading CSV file {filename}: {e}")
         return map_data
     
     def load_mapping(self, mapping_json_filename):
-        """Load regions mapping from JSON file. Auto-generates if missing."""
+        """Load regions mapping from JSON file. Auto-generates if missing or empty."""
         mapping = {}
         # Use the filename as-is (it's already a path)
         mapping_path = mapping_json_filename
         
-        # If mapping file doesn't exist, try to auto-generate it
-        if not os.path.exists(mapping_path):
+        # Check if mapping file exists and is valid
+        file_exists = os.path.exists(mapping_path)
+        mapping_is_empty = False
+        
+        # If mapping file exists, try to load it first
+        if file_exists:
+            try:
+                with open(mapping_path, 'r', encoding='utf-8') as f:
+                    mapping = json.load(f)
+                    # Check if the loaded mapping is empty
+                    if not mapping or len(mapping) == 0:
+                        mapping_is_empty = True
+                        print(f"Warning: {mapping_json_filename} exists but is empty.")
+            except json.JSONDecodeError as e:
+                print(f"Error: {mapping_json_filename} contains invalid JSON: {e}")
+                mapping_is_empty = True
+            except Exception as e:
+                print(f"Error reading mapping JSON {mapping_json_filename}: {e}")
+                mapping_is_empty = True
+        
+        # If file doesn't exist OR is empty, try to auto-generate it
+        if not file_exists or mapping_is_empty:
             # Try to find the Excel file in the same directory
             mapping_dir = os.path.dirname(mapping_path)
             excel_path = os.path.join(mapping_dir, "SeaAreas.xlsx")
             
             if os.path.exists(excel_path):
-                print(f"regions_mapping.json not found. Auto-generating from {excel_path}...")
+                if not file_exists:
+                    print(f"regions_mapping.json not found. Auto-generating from {excel_path}...")
+                else:
+                    print(f"regions_mapping.json is empty. Auto-generating from {excel_path}...")
+                
                 if auto_generate_regions_mapping(excel_path, mapping_path):
                     print(f"Successfully auto-generated {mapping_path}")
+                    # Reload the newly generated mapping
+                    try:
+                        with open(mapping_path, 'r', encoding='utf-8') as f:
+                            mapping = json.load(f)
+                            print(f"Loaded {len(mapping)} region mappings from {mapping_path}")
+                    except Exception as e:
+                        print(f"Error reloading auto-generated mapping: {e}")
                 else:
                     print(f"Warning: Could not auto-generate mapping file. Region tracking disabled.")
+                    if not HAS_OPENPYXL and not HAS_PANDAS:
+                        print(f"  Required packages not installed. Please install: openpyxl or pandas")
                     return mapping
             else:
-                print(f"Warning: Mapping JSON file not found: {mapping_json_filename}")
+                if not file_exists:
+                    print(f"Warning: Mapping JSON file not found: {mapping_json_filename}")
+                else:
+                    print(f"Warning: Mapping JSON file is empty: {mapping_json_filename}")
                 print(f"  Excel file also not found at: {excel_path}")
                 print(f"  Region tracking will be disabled.")
                 return mapping
         
-        # Load the mapping file
-        try:
-            with open(mapping_path, 'r', encoding='utf-8') as f:
-                mapping = json.load(f)
-        except Exception as e:
-            print(f"Error reading mapping JSON {mapping_json_filename}: {e}")
+        # If we successfully loaded a non-empty mapping, report it
+        if mapping and len(mapping) > 0:
+            print(f"Loaded {len(mapping)} region mappings from {mapping_path}")
+        
         return mapping
     
     def get_region_name(self, x, y):
