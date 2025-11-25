@@ -111,6 +111,7 @@ class Ship():
         self.ship_premium_counter = 0  # so as to pay only once per year
         self.ship_damage_accum = 0
         self.ship_current_region = None  # Track current region for ship
+        self.ship_speed_cond_base=0
 
         ### attributes initialised to Booleans
         ship_wait=False
@@ -178,6 +179,7 @@ class Ship():
     def ship_log_update(self, i):
         self.ship_log[0]="Ship Log Details for ship " + self.ship_name
         self.ship_log[1]=  "for other ships click on ship name buttons - top right"
+        self.ship_speed_cond_base=ship_speed_calculate(self.rig_condition_base,self.hull_condition_base)
         ship_speed_cond=ship_speed_calculate(self.rig_condition,self.hull_condition)
         if self.ship_premium==0:
             #self.ship_log[2]="X" # for debugging
@@ -187,7 +189,7 @@ class Ship():
             #self.ship_log[2]="Y" # for debugging
             self.ship_log[2] = "This ship is insured by " + str(self.ship_insurer)  + " at a premium of £" + str(self.ship_premium)
         
-        self.ship_log[3]="Leaving Port Rig Condition:"+str(self.rig_condition_base)+ " Hull Condition:"+str(self.hull_condition_base)+" "+str(round(ship_speed_cond,1))+" knots"
+        self.ship_log[3]="Leaving Port Rig Condition:"+str(self.rig_condition_base)+ " Hull Condition:"+str(self.hull_condition_base)+" "+str(round(self.ship_speed_cond_base,1))+" knots"
         
         return
 
@@ -350,9 +352,9 @@ class Weather_event():
             weather_header_slice=weather_severity_headers[xw][1:4]
             #print("weather header slice",weather_header_slice)
             if self.event_type[0:3]==weather_header_slice:
-                print ("match found", weather_header_slice)
+                #print ("match found", weather_header_slice)
                 weather_item_chosen_severity=weather_settings[xw-1]# -1 because weather severities chosen has a blank in the first entry
-                print("chosen severity",weather_item_chosen_severity)
+                #print("chosen severity",weather_item_chosen_severity)
                 if weather_item_chosen_severity=="Low":
                         self.duration=self.duration * local_data.weather_severity_default[0] # converts to days and adjusts for severity
                         self.wind_speed_max= self.wind_speed_max* local_data.weather_severity_default[0]
