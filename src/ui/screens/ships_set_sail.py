@@ -33,9 +33,9 @@ def ship_detail(window,canvas,selected_ship_number): ### for part 1 before ship 
     color_border = 'blue'
     color_wash='white'
     font20g = pygame.font.SysFont("Georgia", 20, bold=False)
-    ship_detail_x=900
+    ship_detail_x=800
     ship_detail_y=700
-    ship_detail_w=600
+    ship_detail_w=700
     ship_detail_h=300
     ship_detail_list=[]
     ship_detail_rect=pygame.Rect(ship_detail_x,ship_detail_y,ship_detail_w,ship_detail_h)
@@ -49,14 +49,16 @@ def ship_detail(window,canvas,selected_ship_number): ### for part 1 before ship 
     ship_detail_list.append("  and the cost of a significant repair as £"+str(round(ship_list_selected[selected_ship_number].ship_repair)))
     ship_detail_list.append(" The ship plies between "+str(ship_list_selected[selected_ship_number].port)+ " and "+str(ship_list_selected[selected_ship_number].destination))
     go_miles=16*4* len(ship_list_selected[selected_ship_number].path_go) ### check the science
-    ship_detail_list.append(" Journey length is approximately "+str(go_miles) + " nautical miles.")
+   
     ship_detail_list.append(" The total tonnage is "+str(ship_list_selected[selected_ship_number].tons) )
     ship_detail_list.append(" The age of the ship is " + str(ship_list_selected[selected_ship_number].age)+" years, and she was made in "+ str(ship_list_selected[selected_ship_number].place_of_build))
     ship_detail_list.append(" Current rig condition is rated as  " + str(ship_list_selected[selected_ship_number].rig_condition))
     ship_detail_list.append(" and the hull condition rated as "+str(ship_list_selected[selected_ship_number].hull_condition))
     
     ship_detail_list.append("")
-    ship_detail_list.append("BON VOYAGE !!!")
+    if go_miles>0:
+        ship_detail_list.append(" Journey length is approximately "+str(go_miles) + " nautical miles.")
+        ship_detail_list.append("BON VOYAGE !!!")
     #print("60 in ship detail",ship_list_selected[selected_ship_number].ship_name)
     
     #ship_detail_font=font20.render( ship_detail_text,True,'black')
@@ -68,26 +70,32 @@ def ship_detail(window,canvas,selected_ship_number): ### for part 1 before ship 
 
 
 
-def append_if(j, append_text,mytotal_time_months,mytotal_time_days_res,time_stamp):  # this subroutine only appends text if it is different from previous line/lines
+def append_if(j, append_text,mytotal_time_years,mytotal_time_months_res,mytotal_time_days_res,time_stamp):  # this subroutine only appends text if it is different from previous line/lines
         ship_list_selected = local_data.ship_list_selected  # retrieve mirror
         ship_log_len=len(ship_list_selected[j].ship_log)
         append=True
-        numb_test=5 # number of log entries to be tested to see if appending would create a duplicate
-        #while xnum<ship_log_len:
-        for xnum in range(ship_log_len-1,ship_log_len-numb_test,-1):
+        numb_test=10 # number of log entries to be tested to see if appending would create a duplicate
+        if ship_log_len<numb_test:
+            numb_test_used=ship_log_len-1
+        else:
+            numb_test_used=numb_test
+        for xnum in range(ship_log_len-1,ship_log_len-numb_test_used,-1):
             #print(xnum,ship_log_len)
-            part_list=ship_list_selected[j].ship_log[xnum].split(',')
+            part_list=ship_list_selected[j].ship_log[xnum].split(',') # splits of time
             part_list_len=len(part_list)
             if part_list_len>1:
                 append_text_test=part_list[1]
             else:
                 append_text_test=part_list[0]
-
+          
             if (append_text ==append_text_test ) :
                 append=False
+        #print ("93 in appendif, append?"+append_text_test+"  X  "+append_text+ " "+str(append))
+        #print ("94 in len appendif, append?",len(append_text_test),len(append_text))
+        #print ("95 in type appendif, append?",type(append_text_test),type(append_text))
         if append==True and time_stamp==True:
-                ship_list_selected[j].ship_log.append(str(mytotal_time_months) + " months " + str(round(mytotal_time_days_res)) + " days ,"+append_text)
-                local_data.master_log.append(str(mytotal_time_months) + " months " + str(round(mytotal_time_days_res)) + " days "+ ship_list_selected[j].ship_name+" "+append_text)
+                ship_list_selected[j].ship_log.append(str(mytotal_time_years)+"y "+str(mytotal_time_months_res) + "m " + str(round(mytotal_time_days_res)) + "d ,"+append_text) # note , is used as delimeter for append_if and is esssential
+                local_data.master_log.append(str(mytotal_time_years)+" y "+str(mytotal_time_months_res) + "m " + str(round(mytotal_time_days_res)) + "d ,"+ ship_list_selected[j].ship_name+" "+append_text)
         elif append==True and time_stamp==False:
                 ship_list_selected[j].ship_log.append(append_text)
                 local_data.master_log.append(ship_list_selected[j].ship_name+ " "+append_text)
@@ -98,7 +106,7 @@ def append_if(j, append_text,mytotal_time_months,mytotal_time_days_res,time_stam
         if (len(ship_list_selected[j].ship_log) > log_max_len):
             ship_list_selected[j].ship_log.pop(3) # 3 fixed lines to start log
         #print ("100 append text",ship_list_selected[j].ship_name, append_text)
-        master_log_max_len=38
+        master_log_max_len=37
         if (len(local_data.master_log) > master_log_max_len):
             local_data.master_log.pop(1) # 1 fixed lines to start log
 
@@ -107,19 +115,27 @@ def append_if(j, append_text,mytotal_time_months,mytotal_time_days_res,time_stam
         return append
         
 
-def damage_random_sub(i,iw,damage_text,mytotal_time_months, mytotal_time_days_res,weather_events_list,ship_list_selected,mmax,insurers_list): # ship i, weather event iw
+def damage_random_sub(i,iw,damage_text,mytotal_time_years, mytotal_time_months_res, mytotal_time_days_res,weather_events_list,ship_list_selected,mmax,insurers_list): # ship i, weather event iw
     damage_random=10 # any integer
     #damage_increment=100 # may vary according to event
     damage_increment=local_data.damage_increment
     if damage_random == (random.randrange(0, weather_events_list[iw].rig_damage_risk))and ship_list_selected[i].ship_shipwreck==False:
         append_text1 = "rigging damaged in/by "+damage_text
-        appendx=append_if(i, append_text1, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
+        appendx=append_if(i, append_text1, mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res, time_stamp=True)
 
         ship_condition="Rigging"
-        prior_condition=ship_list_selected[i].rig_condition
+       
+        append_text = "prior rig condition: "+ship_list_selected[i].rig_condition +" prior hull condition " + ship_list_selected[i].hull_condition
+        appendy=append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res, time_stamp=True)
+
         degrade_condition(i,ship_list_selected, ship_condition)
-        append_text = "prior rig condition: "+ prior_condition+" degraded rig condition " + ship_list_selected[i].rig_condition + " "+ str(round(ship_list_selected[i].ship_speed_cond, 1)) + " knots "
-        appendy=append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
+        ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition)
+        ship_list_selected[i].ship_speed_cond=ship_speed_cond
+
+        append_text = "degraded rig condition " + ship_list_selected[i].rig_condition + " hull condition " + \
+                            ship_list_selected[i].hull_condition + " "+  str(round(ship_speed_cond, 1))+" knots "
+        appendx=append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,
+                                    time_stamp=True)
         if appendx == True and appendy==True:
             ship_list_selected[i].ship_damage_accum = ship_list_selected[
                                                       i].ship_damage_accum + damage_increment
@@ -127,7 +143,7 @@ def damage_random_sub(i,iw,damage_text,mytotal_time_months, mytotal_time_days_re
                                                       i].ship_value:
                 ship_list_selected[i].ship_damage_accum >= ship_list_selected[
                     i].ship_value # cap ship damage at total value of ship
-        #print("rigging random damage",ship_list_selected[i].ship_name,ship_list_selected[i].ship_damage_accum)
+            #print("rigging random damage",ship_list_selected[i].ship_name,ship_list_selected[i].ship_damage_accum)
             append_text2="rigging damage"
             ship_list_selected[i].damage_event_list.append([ship_list_selected[i].ship_x, ship_list_selected[i].ship_y,append_text2])
             for m in range(0, mmax):
@@ -136,12 +152,20 @@ def damage_random_sub(i,iw,damage_text,mytotal_time_months, mytotal_time_days_re
                     insurers_list[m].claims = insurers_list[m].claims + damage_increment
     if damage_random == (random.randrange(0, weather_events_list[iw].hull_damage_risk))and ship_list_selected[i].ship_shipwreck==False:
         append_text1 = "hull damaged from collision due to " + damage_text
-        appendx=append_if(i, append_text1, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
+        appendx=append_if(i, append_text1,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res, time_stamp=True)
         ship_condition="Hull"
         prior_condition=ship_list_selected[i].hull_condition
+        
+        append_text =" prior hull condition " + ship_list_selected[i].hull_condition + " rig conditon "+ship_list_selected[i].rig_condition
+        appendy=append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res, time_stamp=True)
         degrade_condition(i, ship_list_selected, ship_condition)
-        append_text ="prior hull condition: "+prior_condition+  " degraded hull condition " + ship_list_selected[i].hull_condition + " "+ str(round(ship_list_selected[i].ship_speed_cond, 1)) + " knots "
-        appendy=append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
+        ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition)
+        ship_list_selected[i].ship_speed_cond=ship_speed_cond
+        append_text = "rig condition " + ship_list_selected[i].rig_condition + " degraded hull condition " + \
+                            ship_list_selected[i].hull_condition + " "+  str(round(ship_speed_cond, 1))+" knots "
+        appendx=append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,
+                                    time_stamp=True)
+        
         if appendx==True and appendy==True:
             if ship_list_selected[i].ship_damage_accum >= ship_list_selected[
                                                       i].ship_damage_accum + damage_increment:
@@ -156,7 +180,7 @@ def damage_random_sub(i,iw,damage_text,mytotal_time_months, mytotal_time_days_re
                     insurers_list[m].claims = insurers_list[m].claims + damage_increment
     if damage_random == (random.randrange(0, weather_events_list[iw].shipwreck_damage_risk))and ship_list_selected[i].ship_shipwreck==False:
         append_text = "SHIPWRECK due to "+damage_text
-        append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
+        append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res, time_stamp=True)
         ship_list_selected[i].ship_damage_accum = ship_list_selected[
                                                       i].ship_value  ### total loss of ship
         print (ship_list_selected[i].ship_name, append_text)
@@ -232,6 +256,7 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
             'src/assets/data/newmapNov2025seareas_Water.csv',
             'src/assets/data/regions_mapping.json'
         )
+        print("236 regions map try",regions_map)
         # Check if mapping was successfully loaded (not empty)
         if regions_map.regions_mapping:
             regions_map_available = True
@@ -243,6 +268,7 @@ def ships_set_sail_sub(window, canvas, ship_list_selected, insurers_list):
         print("Region tracking will be disabled.")
         regions_map = None
         regions_map_available = False
+    print("247 regions_map_available",regions_map_available)
     
     map_map = TileMap('src/assets/data/newmap6Sep2025.csv', spritesheet)
     grid = local_data.mapx
@@ -502,6 +528,8 @@ def prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,ma
     pygame.draw.rect(drift_drift, color_border, set_sail_button_text_rect, 2)
     drift_drift.blit(set_sail_button_text, set_sail_button_text_rect)
    
+    ship_detail(window,canvas,selected_ship_number) # to force redisplay with route lenght and BON VOYAGE message
+    ship_detail(window,drift_drift,selected_ship_number)
     
     if display_drift==True:
             window.blit(drift_drift,(0,0))
@@ -526,7 +554,7 @@ def prepare_routes(window,canvas, drift_drift,set_sail_button_text_rect,img2r,ma
                             for sj in range(0, smax):
                                 if ship_list_selected[sj].ship_name in button_names[i][0]:
                                     selected_ship_number=sj
-                                    print("519 selected ship number",sj)
+                                    
                                     ship_detail(window,canvas,selected_ship_number)
                                     ship_detail(window,drift_drift,selected_ship_number)
                                     break
@@ -805,7 +833,7 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map,regions_
             #################  KEY SUBROUTINE CALLS  #########################
             pay_premium(i,mytotal_time_years)
             weather_development(canvas_drift,mytotal_time_months,mytotal_time_months_res,mytotal_time_days,mytotal_time_days_res,myinterval_days,weather_events_list)
-            hazard=evaluate_hazards(canvas_drift,i,grid,mytotal_time_months,mytotal_time_days_res) # inserted to ensure that hazard is evaluated at current position
+            hazard=evaluate_hazards(canvas_drift,i,grid, mytotal_time_years,mytotal_time_months_res,mytotal_time_days_res) # inserted to ensure that hazard is evaluated at current position
             if (hazard==1 or hazard==2 or hazard==4) and weather_state==True: # beached in storm or other weather event
                 beached=True
             else:
@@ -820,15 +848,15 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map,regions_
             ship_waymarks_tuple=ship_waymarks(i,mytotal_time) # retrieves the waymarks for this stage of the ship's journey and if the ship has sailed from port or destination
             wp_next_x=ship_waymarks_tuple[2]
             wp_next_y=ship_waymarks_tuple[3]
-            ship_sail_ok=ship_port_delay(i,canvas_drift, mytotal_time,mytotal_time_months,mytotal_time_days,mytotal_time_days_res,ship_color) # prevent ship from moving before allowed
+            ship_sail_ok=ship_port_delay(i,canvas_drift, mytotal_time,mytotal_time_years,mytotal_time_months_res,mytotal_time_days,mytotal_time_days_res,ship_color) # prevent ship from moving before allowed
             #print("820 ship name",ship_list_selected[i].ship_name,"ship sail ok",ship_sail_ok)
             if ship_sail_ok==True and beached==False and ship_wait==False: # and in water not beach, rocks, land in weather event and is not waiting at port
                 move_sail_x,move_sail_y=ship_move_sail(i,myinterval_days,wp_next_x,wp_next_y)# calculates the amount by which the ship has moved ue to its own sail power
                 move_drift_x,move_drift_y= ship_move_drift(i,myinterval_days,grid)# calculates how much the ship has moved due to ocean drift
-                move_wind_x,move_wind_y,weather_state=ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,weather_events_list,mmax, insurers_list,hazard)
+                move_wind_x,move_wind_y,weather_state=ship_move_wind(i, mytotal_time_years,mytotal_time_months_res,mytotal_time_days_res,myinterval_days,weather_events_list,mmax, insurers_list,hazard)
             else:
-                append_text=("806 not allowed to move: ship_sail_ok"+str(ship_sail_ok)+"beached"+str(beached)+"wait"+str(ship_wait))
-                append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
+                #append_text=("806 not allowed to move: ship_sail_ok"+str(ship_sail_ok)+"beached"+str(beached)+"wait"+str(ship_wait))
+                #append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res, time_stamp=True)
                 move_sail_x=0
                 move_sail_y=0
                 move_drift_x=0
@@ -845,7 +873,7 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map,regions_
             #print("798 at ship xy after ship_move_sail",ship_list_selected[i].ship_name,round(ship_list_selected[i].ship_x,1), round(ship_list_selected[i].ship_y,1))
             ship_list_selected[i].ship_x_last=ship_x
             ship_list_selected[i].ship_y_last=ship_y
-            hazard=evaluate_hazards(canvas_drift,i,grid,mytotal_time_months,mytotal_time_days_res)
+            hazard=evaluate_hazards(canvas_drift,i,grid, mytotal_time_years,mytotal_time_months_res,mytotal_time_days_res)
             if (hazard == 1) or (hazard == 2) or (hazard == 4):
             # Ship hit a barrier - revert to position before the move
             # This allows damage to be applied but stops the ship from continuing
@@ -866,19 +894,19 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map,regions_
             if regions_map_available and regions_map:
                 current_region = regions_map.get_region_name(
                     ship_list_selected[i].ship_x, 
-                    ship_list_selected[i].ship_y
-                )
+                    ship_list_selected[i].ship_y)
+                print("871 current region"+ship_list_selected[i].ship_name +current_region)
                 
                 # If region changed, log it
                 if current_region != ship_list_selected[i].ship_current_region:
                     if current_region is not None:
                         # Ship entered a new region
                         append_text = f"entering {current_region}"
-                        append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
+                        append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res, time_stamp=True)
                     elif ship_list_selected[i].ship_current_region is not None:
                         # Ship left a region (entered unmarked area)
                         append_text = f"leaving {ship_list_selected[i].ship_current_region}"
-                        append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
+                        append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res, time_stamp=True)
                     
                     # Update ship's current region
                     ship_list_selected[i].ship_current_region = current_region
@@ -908,11 +936,11 @@ def ship_display(window,canvas,drift_drift, img2r,display_drift,map_map,regions_
                                 ship_list_selected[i].marker_radius)
             
                 
-            in_port=ship_destination_check(i,canvas_drift,mytotal_time,mytotal_time_months,mytotal_time_days_res)
+            in_port=ship_destination_check(i,canvas_drift,mytotal_time, mytotal_time_years,mytotal_time_months_res,mytotal_time_days_res)
             if in_port==True:
                 if mytotal_time_days-ship_list_selected[i].ship_arrive_time<local_data. ship_turnaround_time:
                     append_text="ship turnaround - waiting in port"
-                    append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
+                    append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
                     ship_list_selected[i].ship_wait=True
                 else:
                     ship_list_selected[i].ship_wait=False
@@ -1160,7 +1188,7 @@ def ship_waymarks(i,mytotal_time):
     #print ("965",ship_list_selected[i].ship_name,'i',i,'k',ship_list_selected[i].ship_k, 'wp_last/next' ,wp_last_x,wp_last_y, wp_next_x,wp_next_y)
     return(wp_last_x,wp_last_y,wp_next_x,wp_next_y)
 
-def ship_port_delay(i,canvas, mytotal_time,mytotal_time_months,mytotal_time_days,mytotal_time_days_res,ship_color):
+def ship_port_delay(i,canvas, mytotal_time,mytotal_time_years,mytotal_time_months_res,mytotal_time_days,mytotal_time_days_res,ship_color):
     ship_list_selected = local_data.ship_list_selected  # retrieve mirror
     font18 = pygame.font.SysFont("Arial", 18, bold=False)
     color_text='black'
@@ -1176,7 +1204,7 @@ def ship_port_delay(i,canvas, mytotal_time,mytotal_time_months,mytotal_time_days
         ship_list_selected[i].ship_log.append(append_text)
     if ship_list_selected[i].ship_k == 0 and ship_list_selected[i].port_delay == 0:  # no port delay
         append_text = ' -ship sets sail'
-        append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
+        append_if(i, append_text, mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
         #print("append text",ship_list_selected[i].ship_name,append_text)
         ship_list_selected[i].ship_depart_time = mytotal_time
         #print (ship_list_selected[i].ship_name, append_text)
@@ -1186,7 +1214,7 @@ def ship_port_delay(i,canvas, mytotal_time,mytotal_time_months,mytotal_time_days
         # delay in port
        
         append_text = ("waiting in port :"+ship_list_selected[i].port)
-        append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
+        append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
         #print("append text",ship_list_selected[i].ship_name,append_text)
         ship_sail_ok=False
         
@@ -1204,10 +1232,10 @@ def ship_port_delay(i,canvas, mytotal_time,mytotal_time_months,mytotal_time_days
     else:  # new position 
         if ship_list_selected[i].ship_k == 0 and ship_list_selected[i].ship_go==True:
             append_text = ("-ship sets sail from "+ship_list_selected[i].port)
-            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
+            append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
         if ship_list_selected[i].ship_k == 0 and ship_list_selected[i].ship_go==False:
             append_text = ("-ship sets sail from "+ship_list_selected[i].destination)
-            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
+            append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
 
         
         ship_sail_ok=True
@@ -1215,7 +1243,7 @@ def ship_port_delay(i,canvas, mytotal_time,mytotal_time_months,mytotal_time_days
     return ship_sail_ok
 
 
-def ship_destination_check(i,canvas,mytotal_time,mytotal_time_months,mytotal_time_days_res):
+def ship_destination_check(i,canvas,mytotal_time,mytotal_time_years,mytotal_time_months_res,mytotal_time_days_res):
     ship_list_selected = local_data.ship_list_selected  # retrieve mirror
     in_port=False
      ################check if at destination#############
@@ -1240,7 +1268,7 @@ def ship_destination_check(i,canvas,mytotal_time,mytotal_time_months,mytotal_tim
             ship_list_selected[i].ship_repair_sub(i)
             
             append_text = "reached destination "+ship_list_selected[i].destination +" repairs and supplies in progress"
-            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
+            append_if(i, append_text, mytotal_time_years, mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
             ship_list_selected[i].ship_event_x_list = [] # to track only half of journey, delete if full journey  to be tracked
             ship_list_selected[i].ship_event_y_list = []
     else:
@@ -1252,7 +1280,7 @@ def ship_destination_check(i,canvas,mytotal_time,mytotal_time_months,mytotal_tim
             
             append_text = "reached port "+ship_list_selected[i].destination
             
-            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
+            append_if(i, append_text, mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
             
             ship_list_selected[i].ship_event_x_list = []
             ship_list_selected[i].ship_event_y_list = []
@@ -1355,7 +1383,7 @@ def ship_move_drift(i,myinterval_days,grid):
     #print('1251 i ospeed_x,y', i, ship_list_selected[i].ship_name,ospeedr_x, ospeedr_y)
     return(ospeedr_x,ospeedr_y)
 
-def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,weather_events_list,mmax, insurers_list,hazard):
+def ship_move_wind(i,mytotal_time_years,mytotal_time_months_res,mytotal_time_days_res,myinterval_days,weather_events_list,mmax, insurers_list,hazard):
 #############Consequences of proximity to weather event#####################
 ############### in fogs and storms navigation is very limited. Compas works but astrolabe does not since there is no sun or stars####
 ### ability of ship to chose a route whilst being tossed about in a storm is limited ###############
@@ -1404,9 +1432,9 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
                         ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition) 
                         append_text = 'encounters Fog - ship speed ' + str(round(ship_speed_cond, 1)) + " knots "
                         #print(append_text)
-                        append_if(i, append_text,mytotal_time_months,mytotal_time_days_res,time_stamp=True)
+                        append_if(i, append_text, mytotal_time_years,mytotal_time_months_res,mytotal_time_days_res,time_stamp=True)
                         damage_text="Fog"
-                        damage_random_sub(i,iw,damage_text, mytotal_time_months, mytotal_time_days_res,weather_events_list,ship_list_selected,mmax,insurers_list)
+                        damage_random_sub(i,iw,damage_text, mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,weather_events_list,ship_list_selected,mmax,insurers_list)
                     else:
                         if (weather_events_list[iw].event_type[len(weather_events_list[iw].event_type) - 1] == 'E'):
                             ship_list_selected[i].ship_infoge = False
@@ -1422,7 +1450,7 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
                             else:
                                 ship_list_selected[i].ship_instormw = True
                             append_text = "encounters Storms"
-                            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
+                            append_if(i, append_text, mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
 
                             ship_list_selected[i].ship_speed_cond = 0.5 * subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition) # 0.5 is a hard coded speed reduction for storms
                             ship_list_selected[i].marker_radius = 10
@@ -1437,7 +1465,7 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
                             #if i==0:
                                 #print("1179",ship_list_selected[i].ship_name," v1",v1,"v2",v2,"v3",v3,"angle by atan",round(angle_to_event,3),"fract event radius",round(fract_event_radius,3),"wind speed",wind_speed," disp_x",round(ship_list_selected[i].weather_disp_x,3), "disp_y",round(ship_list_selected[i].weather_disp_y,3))
                             damage_text="Storm"
-                            damage_random_sub(i, iw, damage_text, mytotal_time_months, mytotal_time_days_res,weather_events_list,ship_list_selected,mmax,insurers_list)
+                            damage_random_sub(i, iw, damage_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,weather_events_list,ship_list_selected,mmax,insurers_list)
                         else:
                             if (weather_events_list[iw].event_type[len(weather_events_list[iw].event_type) - 1] == 'E'):
                                     ship_list_selected[i].ship_instorme = False
@@ -1451,7 +1479,7 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
                             else:
                                 ship_list_selected[i].ship_inhurricanew = True
                             append_text = "encounters Hurricane"
-                            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
+                            append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
 
                             #ship_list_selected[i].ship_speed_cond = 0.4 * ship_list_selected[i].ship_speed_pix / 8
                             ship_list_selected[i].ship_speed_cond = 0.4 *subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition) # 0.4 is a hard coded speed reduction for hurricanes
@@ -1465,9 +1493,9 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
                                                             1 - fract_event_radius)
                             ship_list_selected[i].marker_radius = 10
                             append_text = "rig condition " + ship_list_selected[i].rig_condition + " hull condition " + ship_list_selected[i].hull_condition + " " + str(round(ship_list_selected[i].ship_speed_cond, 1)) + " knots "
-                            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
+                            append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res, time_stamp=True)
                             damage_text = "Hurricane"
-                            damage_random_sub(i, iw, damage_text, mytotal_time_months, mytotal_time_days_res,weather_events_list,ship_list_selected,mmax,insurers_list)
+                            damage_random_sub(i, iw, damage_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,weather_events_list,ship_list_selected,mmax,insurers_list)
                         else:
                             if (weather_events_list[iw].event_type[len(weather_events_list[iw].event_type) - 1] == 'E'):
                                 ship_list_selected[i].ship_inhurricanee = False
@@ -1479,7 +1507,7 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
                             ship_list_selected[i].ship_inicebergs = True
                             append_text = "encounters Icebergs - ship speed" +str(round(ship_list_selected[i].ship_speed_cond, 1)) + " knots "
                 
-                            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
+                            append_if(i, append_text, mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
                             #ship_list_selected[i].ship_speed_cond = 0.3 * ship_list_selected[i].ship_speed_pix / 8
                             ship_list_selected[i].ship_speed_cond = 0.3 * subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition) # 0.3 is a hard coded speed reduction for icebergs
                             ship_list_selected[i].ship_inicebergs = False
@@ -1488,11 +1516,11 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
                             ship_list_selected[i].weather_disp_y = 0
                             append_text = "encounters Icebergs - ship speed" +str(round(ship_list_selected[i].ship_speed_cond, 1)) + " knots "
                 
-                            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
+                            append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
                             #append_text = "rig condition " + ship_list_selected[i].rig_condition + " hull condition " + ship_list_selected[i].hull_condition + " "+str(round(ship_list_selected[i].ship_speed_cond, 1)) + " knots "
                             #append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
                             damage_text = "Icebergs"
-                            damage_random_sub(i, iw, damage_text, mytotal_time_months, mytotal_time_days_res,
+                            damage_random_sub(i, iw, damage_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,
                                     weather_events_list, ship_list_selected, mmax, insurers_list)
                     else:
                         ship_list_selected[i].ship_inicebergs = False
@@ -1508,10 +1536,10 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
                             ship_list_selected[i].weather_disp_x = 0
                             ship_list_selected[i].weather_disp_y = 0
                             append_text = "encounters Pirates"
-                            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
+                            append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
                         ship_list_selected[i].marker_radius = 10
                         damage_text = "Pirates"
-                        damage_random_sub(i, iw, damage_text, mytotal_time_months, mytotal_time_days_res,weather_events_list,ship_list_selected,mmax,insurers_list)
+                        damage_random_sub(i, iw, damage_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,weather_events_list,ship_list_selected,mmax,insurers_list)
 
                     else:
                         if (weather_events_list[iw].event_type[len(weather_events_list[iw].event_type) - 1] == 'E'):
@@ -1547,7 +1575,7 @@ def ship_move_wind(i,mytotal_time_months,mytotal_time_days_res,myinterval_days,w
         
         
 
-def evaluate_hazards(canvas,i,grid,mytotal_time_months,mytotal_time_days_res):
+def evaluate_hazards(canvas,i,grid, mytotal_time_years,mytotal_time_months_res,mytotal_time_days_res):
  #### EVALUATE FIXED HAZARDS AT NEW POSITION              ##############################
     color_header='red'
     color_border='blue'
@@ -1570,8 +1598,9 @@ def evaluate_hazards(canvas,i,grid,mytotal_time_months,mytotal_time_days_res):
         gridx0 = ship_list_selected[i].path_back[ship_list_selected[i].ship_k][1]
         gridy0 = ship_list_selected[i].path_back[ship_list_selected[i].ship_k][0]
 
-    if abs(gridx-gridx0)>4 or abs(gridx-gridx1)>4 or abs(gridy-gridy0)>4 or abs(gridy-gridy1)>4:
-        print('1290 DEVIATION ERROR',ship_list_selected[i].ship_name,' gridx', gridx,'grid_y', gridy, 'gridx0', gridx0,'gridy0', gridy0,'gridx1',gridx1,'gridy1',gridy1)
+    if abs(gridx-gridx0)>1 or abs(gridx-gridx1)>1 or abs(gridy-gridy0)>1 or abs(gridy-gridy1)>1:
+        append_text='1290 DEVIATION ERROR'+ship_list_selected[i].ship_name+' gridx'+ str(gridx)+'grid_y'+ str(gridy)
+        append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res, time_stamp=True)
     if gridx<0: gridx=0
     if gridx>80: gridx=80
     if gridy<0: gridy=0
@@ -1587,19 +1616,19 @@ def evaluate_hazards(canvas,i,grid,mytotal_time_months,mytotal_time_days_res):
                 10 * round(ship_list_selected[i].ship_x / 10)) + ":" + str(
                 10 * round(ship_list_selected[i].ship_y / 10)))
             #print("append text",ship_list_selected[i].ship_name,append_text)
-            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
+            append_if(i, append_text, mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
         if hazard_sq == 2:
             append_text = ("encountered rocks at coordinates " + str(
                 10 * round(ship_list_selected[i].ship_x / 10)) + ":" + str(
                 10 * round(ship_list_selected[i].ship_y / 10)))
             #print("append text",ship_list_selected[i].ship_name,append_text)
-            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
+            append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
             
         if hazard_sq == 4:
             append_text = ("encountered land at coordinates " + str(
                 10 * round(ship_list_selected[i].ship_x / 10)) + ":" + str(
                 10 * round(ship_list_selected[i].ship_y / 10)))
-            append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,time_stamp=True)
+            append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
             #print("append text",ship_list_selected[i].ship_name,append_text)
         hazard_k_last=hazard_k
     if ((hazard_sq==1) or (hazard_sq==2) or (hazard_sq==4)) and ship_list_selected[i].ship_k != 0:
@@ -1612,18 +1641,26 @@ def evaluate_hazards(canvas,i,grid,mytotal_time_months,mytotal_time_days_res):
                 beaching_damage_increment=20
                 append_text = ("ship damaged at " + str(10 * round(ship_list_selected[i].ship_x / 10)) + ":" + str(
                     10 * round(ship_list_selected[i].ship_y / 10)) + " due to " + hazard_text)  # rounds to nearest 10
-                appendx=append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=True)
-                #print("append text",ship_list_selected[i].ship_name,append_text)
-                append_text = "rig condition " + ship_list_selected[i].rig_condition + " hull condition " + \
+                appendx=append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res, time_stamp=True)
+                append_text = "prior rig condition " + ship_list_selected[i].rig_condition + " prior hull condition " + ship_list_selected[i].hull_condition 
+                appendy = append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,
+                                    time_stamp=True)
+                
+                
                 ship_list_selected[i].hull_condition + " knots " + str(
-                round(ship_list_selected[i].ship_speed_cond, 1))
-                appendy=append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=False)
+                round(ship_speed_cond, 1))
+                appendy=append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res, time_stamp=True)
                 if appendx==True and appendy==True:
+                    degrade_condition(i, ship_list_selected, ship_condition)
                     ship_list_selected[i].ship_damage_accum = ship_list_selected[
                                                             i].ship_damage_accum + beaching_damage_increment
-                    degrade_condition(i, ship_list_selected, ship_condition)
+                    
                     #ship_list_selected[i].ship_speed_reset(i)  # to modify speed in accordance with new ship condition
+                    ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition)
                     ship_list_selected[i].ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition)
+                    append_text = "updated rig condition " + ship_list_selected[i].rig_condition + " updated hull condition " + ship_list_selected[i].hull_condition +" " + str(round(ship_speed_cond, 1)+" knots ")
+                    append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,
+                                    time_stamp=True)
             if hazard_sq == 2:
                 hazard_text="rocks"
                 ship_condition = "Hull"
@@ -1631,22 +1668,24 @@ def evaluate_hazards(canvas,i,grid,mytotal_time_months,mytotal_time_days_res):
                 ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition)
                 append_text = (
                             "ship damaged at " + str(10 * round(ship_list_selected[i].ship_x / 10)) + ":" + str(
-                        10 * round(ship_list_selected[
-                                    i].ship_y / 10)) + " due to " + hazard_text)  # rounds to nearest 10
-                appendx=append_if(i, append_text, mytotal_time_months, mytotal_time_days_res, time_stamp=False)
-                append_text = "rig condition " + ship_list_selected[i].rig_condition + " hull condition " + \
-                            ship_list_selected[i].hull_condition + " knots " + str(
-                    round(ship_speed_cond, 1))
-                appendy = append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,
-                                    time_stamp=False)
+                        10 * round(ship_list_selected[i].ship_y / 10)) + " due to " + hazard_text)  # rounds to nearest 10
+                appendx=append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
+                append_text = "prior rig condition " + ship_list_selected[i].rig_condition + " prior hull condition " + ship_list_selected[i].hull_condition + " "+str(round(ship_speed_cond, 1))+" knots "
+                appendy = append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,
+                                    time_stamp=True)
 
                 if appendx==True and appendy==True:
                     degrade_condition(i, ship_list_selected, ship_condition)
                     ship_list_selected[i].ship_damage_accum = ship_list_selected[
                                                                 i].ship_damage_accum + rocks_damage_increment
-
-                    #ship_list_selected[i].ship_speed_reset(i)  # to modify speed in accordance with new ship condition
+                    ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition)
+                    # to modify speed in accordance with new ship condition
                     ship_list_selected[i].ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition)
+                    append_text = "updated rig condition " + ship_list_selected[i].rig_condition + " updated hull condition " + ship_list_selected[i].hull_condition +" "+ str(round(ship_speed_cond, 1))+" knots "
+                    append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,
+                                    time_stamp=True)
+        
+        
         if hazard_sq == 4:
                 hazard_text="land"
                 ship_condition = "Hull"
@@ -1654,13 +1693,18 @@ def evaluate_hazards(canvas,i,grid,mytotal_time_months,mytotal_time_days_res):
                 rocks_damage_increment = 20
                 ship_list_selected[i].ship_damage_accum = ship_list_selected[
                                                             i].ship_damage_accum + rocks_damage_increment
-                appendx = append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,
-                                    time_stamp=False)
+                
                 append_text = "rig condition " + ship_list_selected[i].rig_condition + " hull condition " + \
-                            ship_list_selected[i].hull_condition + " knots " + str(
-                    round(ship_list_selected[i].ship_speed_cond, 1))
-                appendy = append_if(i, append_text, mytotal_time_months, mytotal_time_days_res,
-                                    time_stamp=False)
+                            ship_list_selected[i].hull_condition + "  " + str(
+                    round(ship_list_selected[i].ship_speed_cond, 1))+" knots"
+                ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition)
+                append_text = (
+                            "ship damaged at " + str(10 * round(ship_list_selected[i].ship_x / 10)) + ":" + str(
+                        10 * round(ship_list_selected[i].ship_y / 10)) + " due to " + hazard_text)  # rounds to nearest 10
+                appendx=append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,time_stamp=True)
+                append_text = "prior rig condition " + ship_list_selected[i].rig_condition + " prior hull condition " + ship_list_selected[i].hull_condition + str(round(ship_speed_cond, 1)+" knots ")
+                appendy = append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,
+                                    time_stamp=True)
 
                 if appendx == True and appendy == True:
                     ship_list_selected[i].ship_damage_accum = ship_list_selected[
@@ -1668,6 +1712,13 @@ def evaluate_hazards(canvas,i,grid,mytotal_time_months,mytotal_time_days_res):
                     degrade_condition(i, ship_list_selected, ship_condition)
                     #ship_list_selected[i].ship_speed_reset(i)  # to modify speed in accordance with new ship condition
                     ship_list_selected[i].ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected.hull_condition)
+                    ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition)
+                    # to modify speed in accordance with new ship condition
+                    ship_list_selected[i].ship_speed_cond=subroutines.ship_speed_calculate(ship_list_selected[i].rig_condition,ship_list_selected[i].hull_condition)
+                    append_text = "updated rig condition " + ship_list_selected[i].rig_condition + " updated hull condition " + ship_list_selected[i].hull_condition + " "+str(round(ship_speed_cond, 1)+" knots ")
+                    append_if(i, append_text,  mytotal_time_years,mytotal_time_months_res, mytotal_time_days_res,
+                                    time_stamp=True)
+        
                 #print("hazard damage", ship_list_selected[i].ship_name, ship_list_selected[i].ship_damage_accum)
     return( hazard_sq)
 
@@ -1678,9 +1729,9 @@ def ship_log_display(canvas,ship_log):  ### for part 2 aftership sails. Player c
     #font20 = pygame.font.SysFont("Arial", 20, bold=False)
     color_wash='white'
     color_border='blue'
-    ship_detail_x = 900
+    ship_detail_x = 800
     ship_detail_y = 700
-    ship_detail_w = 600
+    ship_detail_w = 700
     ship_detail_h = 300
     
     ship_detail_rect = pygame.Rect(ship_detail_x, ship_detail_y, ship_detail_w, ship_detail_h)

@@ -37,6 +37,7 @@ def read_excel_openpyxl(filepath):
             region_name = str(row[1]).strip()
             if tile_id and region_name:
                 mapping[tile_id] = region_name
+                print("40 in openpyxl",region_name,tile_id)
     
     return mapping
 
@@ -63,7 +64,7 @@ def read_excel_pandas(filepath):
         
         if tile_id and region_name:
             mapping[tile_id] = region_name
-    
+            print("67 in excel",region_name,tile_id)
     return mapping
 
 def generate_regions_mapping(excel_path, output_path):
@@ -122,7 +123,7 @@ if __name__ == "__main__":
     output_path = os.path.join(project_root, "src", "assets", "data", "regions_mapping.json")
     
     success = generate_regions_mapping(excel_path, output_path)
-    
+    print("125 map",success)
     if not success:
         print("\nTroubleshooting:")
         print("1. Make sure SeaAreas.xlsx exists in src/assets/data/")
