@@ -1,7 +1,7 @@
 mapx=[]
 path_local=[]
-master_log=["Master Log"]
-
+master_log=["Ship Master Log"]
+insurer_master_log=["Insurer Master Log"]
 
 
 button_names=[['Click to select menu item - Information Pages:',0],['Background to this series of games',1], # 0,1

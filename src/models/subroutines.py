@@ -150,10 +150,11 @@ class Ship():
         self.revenue_in = self.tons * imports/self.haul
         self.revenue_accum = 0
         value = 3300  # £ for a 200 ton ship
-        self.ship_value = value * ((self.tons / 200) ** 0.6)  # law of sixth tenths
+        self.ship_value = round(value * ((self.tons / 200) ** 0.6) ) # law of sixth tenths
         self.ship_repair=self.ship_value*.33
         self.ship_balance_ins = self.revenue_accum - self.ship_premium_accum
         self.ship_balance_unins = self.revenue_accum - self.ship_damage_accum
+        self_ship_value_remain=0
 
         ### other attrubutes
         self.marker_radius = 5
@@ -194,7 +195,7 @@ class Ship():
         return
 
     def ship_finance_update(self, i):
-        self.ship_balance_ins = self.revenue_accum - self.ship_premium
+        self.ship_balance_ins = self.revenue_accum - self.ship_premium_accum
         self.ship_balance_unins = self.revenue_accum - self.ship_damage_accum
 
 
@@ -207,6 +208,7 @@ class Ship():
         ship_speed_cond=ship_speed_calculate(self.rig_condition,self.hull_condition)
         self.ship_log[3] = "Leaving Port after repair Rig Condition:" + str(self.rig_condition) + " Hull Condition:" + str(
             self.hull_condition) +" "+ str(round(ship_speed_cond,1)) + " knots"
+        self.ship_value_remain=self.ship_value
         return ship_speed_cond
 
     def get_port(self, j): # creates ports tuple of port and destination and runs astar
@@ -418,6 +420,11 @@ class Insurer():
         self.claims = 0
         self.balance = self.premiums_income_accum-self.claims
         self.remaining_book_value =  self.initial_book_value-self.premiums_income_accum
+      
+        
+        
+
+
     def insurer_update(self,i):
         #print("in update i",i)
 
@@ -430,6 +437,9 @@ class Insurer():
         self.premiums_income=0
         self.premiums_income_accum=0
         self.remaining_book_value=self.initial_book_value
+
+
+        
 def find_route(port,destination): ### note this method is also coded as a method for Ship Class - some redundancy here
     for i in range(0, len(local_data.ports_waypoints_coord)):
 
@@ -747,10 +757,10 @@ def insurer_finances_nested_list_sub(window,canvas,insurer_finances_table_x,insu
     ### display finances
 def finances_sub(window,canvas):
     
-    insurer_table_x,insurer_table_y=20,100
+    insurer_table_x,insurer_table_y=20,50
 
-    slist_x,slist_y=20,250
-    slist_w,slist_h=1000,800
+    slist_x,slist_y=20,200
+    slist_w,slist_h=900,600
    
 
     color_bg='black'
@@ -800,7 +810,7 @@ def finances_sub(window,canvas):
         rows_list3.append(round(insurers_list[m].claims))
     ins_row_title4 = "Balance"
     rows_list4.append(ins_row_title4)
-    ins_bal_win=0
+    ins_bal_win=-100000 # given that insurers can lose monety
     ins_bal_win_name=""
     for m in range(0, mmax):
         rows_list4.append(round(insurers_list[m].balance))
@@ -842,17 +852,13 @@ def finances_sub(window,canvas):
             ship_list_selected[sj].ship_finance_update(sj)
             #print(ship_list_selected[sj].ship_insurer)
             if insurer_name == ship_list_selected[sj].ship_insurer:
-                #ship_list_selected[sj].ship_name, ship_list_selected[sj].ship_premium_accum, round(ship_list_selected[sj].revenue_accum), round(ship_list_selected[sj].ship_balance_ins), round(ship_list_selected[sj].ship_balance_unins))
-
-                #print((ship_list_selected[sj].ship_damage_accum), round(ship_list_selected[sj].revenue_accum), round(
-                    #ship_list_selected[sj].ship_balance_ins), round(ship_list_selected[sj].ship_balance_unins))
-                # slist.append(["", ""])
+               
                 slist.append([ship_list_selected[sj].ship_name,  ship_list_selected[sj].ship_premium_accum,round(ship_list_selected[sj].ship_damage_accum),round(ship_list_selected[sj].revenue_accum),round(ship_list_selected[sj].ship_balance_ins)])
         #slist.append(["", ""])
     slist.append(["Uninsured",""])
     for sj in range(0,smax):
             if ship_list_selected[sj].ship_insurer=="Uninsured":
-                slist.append([ship_list_selected[sj].ship_name,  ship_list_selected[sj].ship_premium_accum,round(ship_list_selected[sj].ship_damage_accum),round(ship_list_selected[sj].revenue_accum),round(ship_list_selected[sj].ship_balance_ins)])
+                slist.append([ship_list_selected[sj].ship_name,  ship_list_selected[sj].ship_premium_accum,round(ship_list_selected[sj].ship_damage_accum),round(ship_list_selected[sj].revenue_accum),round(ship_list_selected[sj].ship_balance_unins)])
                 
 
     #print ("slist",slist)
@@ -865,7 +871,7 @@ def finances_sub(window,canvas):
                                       slist_y,slist_x , 20, 2, 0,color_wash)
     
     insurer_win_flash_x=50
-    insurer_win_flash_y=600
+    insurer_win_flash_y=500
 
     insurer_win_flash_rect=(insurer_win_flash_x,insurer_win_flash_y,400,40)
     pygame.draw.rect(canvas,color_wash,insurer_win_flash_rect)
@@ -876,14 +882,23 @@ def finances_sub(window,canvas):
     canvas.blit(insurer_win_flash_text_rend, insurer_win_flash_rect)
     ### DISPLAYS SHIP WITH BEST FINANCE
     ship_win_flash_x=50
-    ship_win_flash_y=700
-    ship_win_balance=-10000 #since early balances can be negative
-    ship_win_name="J"
+    ship_win_flash_y= insurer_win_flash_y+50
+
+    win_balance=-10000 #since early balances can be negative
+    #ship_win_name="J"
+    ship_balance_to_use=0 # according to whether ship is insured or not
+   
 
     for sw in range (0,smax):
-        if ship_list_selected[sw].ship_balance_ins>ship_win_balance:
-            ship_win_balance=ship_list_selected[sw].ship_balance_ins
-            ship_win_name=ship_list_selected[sw].ship_name
+
+        if ship_list_selected[sw].ship_premium>0: # insured ship
+            ship_balance_to_use=ship_list_selected[sw].ship_balance_ins
+        else:
+            ship_balance_to_use=ship_list_selected[sw].ship_balance_unins
+        if ship_balance_to_use>win_balance:
+                win_balance=ship_balance_to_use
+      
+                ship_win_name=ship_list_selected[sw].ship_name
 
 
 
@@ -894,6 +909,14 @@ def finances_sub(window,canvas):
    
     ship_win_flash_text_rend=font20g.render(ship_win_flash_text,True,color_bg)
     canvas.blit(ship_win_flash_text_rend, ship_win_flash_rect)
+
+    win_flash_rect=(ship_win_flash_x,ship_win_flash_y+50,400,40)
+    pygame.draw.rect(canvas,color_wash,win_flash_rect)
+    #pygame.draw.rect(canvas,color_wash,win_flash_rect,2)
+    win_flash_text="* A winner with a negative balance has lost less money"
+   
+    win_flash_text_rend=font20g.render(win_flash_text,True,color_bg)
+    canvas.blit(win_flash_text_rend, win_flash_rect)
 
 def master_log_sub(window,canvas):
     master_log_x,master_log_y=10,50
@@ -910,7 +933,20 @@ def master_log_sub(window,canvas):
     
     blit_text(canvas, local_data.master_log, master_log_rect, color_border)  ### note blit_text uses a list
     
+def insurer_master_log_sub(window,canvas):
+    insurer_master_log_x,insurer_master_log_y=10,50
+    insurer_master_log_w,insurer_master_log_h=1100,780
+   
+    color_bg='black'
+    color_border='blue'
+    color_wash='white'
+    font20g = pygame.font.SysFont("Georgia", 20, bold=False)
+    insurer_master_log_rect=pygame.Rect(insurer_master_log_x,insurer_master_log_y,insurer_master_log_w,insurer_master_log_h)
+    pygame.draw.rect(canvas,color_wash,insurer_master_log_rect)
+    pygame.draw.rect(canvas,color_border,insurer_master_log_rect,2)
 
+    
+    blit_text(canvas,local_data.insurer_master_log, insurer_master_log_rect, color_border)  ### note blit_text uses a list
 
 def bid_flash(canvas,bid_flash_text,bid_flash_x,bid_flash_y,alt):
             width=400

@@ -433,7 +433,7 @@ def premiums_alt_sub_sub(window, canvas, ship_list_me, ship_list_selected, insur
                 accepted_total += 1  # to count that all ships have been covered
                 premiums_accepted_nested_list[0 + round_count + 2][m * 2] = ship_name
                 premiums_accepted_nested_list[0 + round_count + 2][m * 2 + 1] = premium_offered
-                insurers_list[m].premiums_income_accum+= premium_offered  # oop
+                insurers_list[m].premiums_income_accum+= premium_offered  # oop - tried disabled to avoid double counting but causes a failure
                 insurers_list[m].remaining_book_value = insurers_list[m].remaining_book_value - premium_offered  # oop
                 insurers_list[m].ships_insured_list.append(ship_name)
                 ### FIND SUCCESSFUL SHIP IN SHIP LIST SELECTED TO UPDATE INSURED DATA
