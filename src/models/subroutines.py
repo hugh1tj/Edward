@@ -110,7 +110,7 @@ class Ship():
         self.ship_premium_accum=0
         self.ship_premium_counter = 0  # so as to pay only once per year
         self.ship_damage_accum = 0
-        self.ship_current_region = None  # Track current region for ship
+        self.ship_current_region = "Unknown"  # Track current region for ship
         self.ship_speed_cond_base=0
 
         ### attributes initialised to Booleans
@@ -599,6 +599,45 @@ def draw_grid_with_blanks(canvas, nested_list, cell_width, cell_height,paddingx,
             text_rect = text.get_rect(center=(x + cell_width // 2, y + cell_height // 2))
             canvas.blit(text, text_rect)
 
+def draw_grid_with_bolded(canvas, nested_list, cell_width, cell_height,paddingx,paddingy,table_start_y,table_start_x,font_num,row_head,col_head,color_bg):
+    # makes bold all insurer names
+    
+    if font_num == 22:
+        font_use = pygame.font.SysFont("Arial", 22, bold=False)
+    else:
+        font_use = pygame.font.SysFont("Arial", 20, bold=False)
+    for row_index, row in enumerate(nested_list):
+        #print("row index","row",row)
+        for col_index, item in enumerate(row):
+            #print("col index",col_index,"item",item)
+            # Calculate position
+            x = table_start_x+col_index * (cell_width + paddingx) + paddingx
+            y = table_start_y + row_index * (cell_height + paddingy) + paddingy
+
+            # Draw cell
+            if str(item)=="":
+                width = 1
+                back_color = color_bg
+                pygame.draw.rect(canvas,color_bg, (x, y, cell_width, cell_height))
+
+            else:
+                width=2
+                back_color = 'blue'
+                pygame.draw.rect(canvas, 'white', (x, y, cell_width, cell_height))
+            if row_index <= row_head-1 or col_index<=col_head-1:
+                pygame.draw.rect(canvas, 'red', (x, y, cell_width, cell_height),width)
+            else:
+                pygame.draw.rect(canvas, back_color, (x, y, cell_width, cell_height),width)
+
+            # Render text
+            if str(item)=="Stern" or str(item)=="Bartholomew"or str(item)=="Ledger" or str(item)=="Uninsured" :
+                font_use = pygame.font.SysFont("Arial", 20, bold=True)
+            else:
+                font_use = pygame.font.SysFont("Arial", 20, bold=False)
+            text = font_use.render(str(item), True, 'black')
+            text_rect = text.get_rect(center=(x + cell_width // 2, y + cell_height // 2))
+            canvas.blit(text, text_rect)
+
 
 def draw_grid_with_name(canvas, nested_list, cell_width, cell_height,paddingx,paddingy,table_start_y,table_start_x,font_num,row_head,col_head, ship_name_sub):# m font is int 20,22,row_head is number
     #of rows which should have red border and col_head number of columns which should have red border
@@ -865,7 +904,7 @@ def finances_sub(window,canvas):
     slist_nested = slist
     #slist_y = 200
    
-    draw_grid_with_blanks(canvas, slist_nested, insurer_finances_cell_width, cell_height,
+    draw_grid_with_bolded(canvas, slist_nested, insurer_finances_cell_width, cell_height,
                                       padding_x,
                                       padding_y,
                                       slist_y,slist_x , 20, 2, 0,color_wash)

@@ -95,7 +95,7 @@ ports_waypoints_coord=[                         # as now picked out by mouse ove
 list_colors=['dark red','red','violet','blue','dark orange','dark blue','dark green', 'black']
 list_tile_id=[' ','Beach','Rocks','No Significant Ocean Drift', 'Land', 'Labrador and Canaries Currents: N to S', 'Gulf Steam : SW to NE','North Atlantic Drift:  W to E', 'North Equatorial Current : E to W']
 
-weather_events_list=[('Hurricane_E',1,11,720,800,2,80,2,60,70,24,100,60,100,800,10000),('Hurricane_W',1,9,400,800,1,0,1,-10,10,24,110,60,100,800,10000),('Storms_W',0,6,310,539,2,-45,1,-50,-40,24,60,50,500,1000,50000 ),('Storms_E',0,7,850,450,1.5,-45,1.5 ,-60,-40,24,50,50,500,1000,50000 ),
+weather_events_list=[('Hurricane_E',1,11,720,800,2,80,2,60,70,24,100,60,100,800,10000),('Hurricane_W',0,11,400,800,1,0,1,-10,10,24,110,60,100,800,10000),('Storms_W',0,6,310,539,2,-45,1,-50,-40,24,60,50,500,1000,50000 ),('Storms_E',0,7,850,450,1.5,-45,1.5 ,-60,-40,24,50,50,500,1000,50000 ),
                    ('Icebergs_W',0,4,480,200,3,-160,0.5,-170,-180,0,0,50,10000,1000,2000 ),('Fog_W',0,4,479,399,1,40,0.5, 30,40,0, 0,50,1000,10000,50000),('Fog_E',0,4,1000,100,1,-140,0.9 ,-170,-180,0, 0,50,1000,10000,50000),('Pirates_E',0,12,850,590,9,0,0,0,0,0,0,70,1000,10000,30000),('Pirates_W',0,12,200,700,9,0,0 ,0,0,0, 0,70,1000,10000,20000)]
 #weather_events_list=[('Hurricane_E',7,11,720,800,2,80,2,60,70,24,100,60,100,800,100),('Hurricane_W',5,9,400,800,1,0,1,-10,10,24,110,60,100,800,100),('Storms_W',0,6,310,539,2,-45,1,-50,-40,24,60,50,500,1000,500 ),('Storms_E',0,7,850,450,1.5,-45,1.5 ,-60,-40,24,50,50,500,1000,500 ),
                      #('Icebergs_W',0,4,480,200,3,-160,0.5,-170,-180,0,0,50,10000,1000,200 ),('Fog_W',0,4,479,399,1,40,0.5, 30,40,0, 0,50,1000,10000,500),('Fog_E',0,4,1000,100,1,-140,0.9 ,-170,-180,0, 0,50,1000,10000,500),('Pirates_E',0,12,850,590,9,0,0,0,0,0,0,70,1000,10000,300),('Pirates_W',0,12,200,700,9,0,0 ,0,0,0, 0,70,1000,10000,200)]
@@ -147,7 +147,14 @@ mmax=3
 insurers_list=[]
 wind_mag=2 # magnification of wind effect
 revenue_mult=3 # revenue multiplier
-damage_increment=200
+
+
+damage_increment=199
+rig_damage_increment=100
+hull_damage_increment=200
+beaching_damage_increment=50
+rock_damage_increment=210
+
 ship_turnaround_time=2 # days in port'
 
 premium_select_labels=["Underwriter","Premium %",5,7.5,10,12.5,15,17.5,20]
